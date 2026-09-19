@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'screens/main_navigation_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'services/database_service.dart';
+import 'services/paywall_service.dart';
 import 'theme/app_theme.dart';
 
 void main() async {
@@ -19,6 +20,9 @@ void main() async {
   // Initialize Database and TypeAdapters
   final dbService = DatabaseService();
   await dbService.init();
+
+  // Initialize Paywall and RevenueCat configurations
+  await PaywallService().init();
 
   runApp(const AhlApp());
 }

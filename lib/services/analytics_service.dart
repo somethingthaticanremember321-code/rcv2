@@ -54,4 +54,17 @@ class AnalyticsService {
       'trigger': trigger,
     });
   }
+
+  void paywallConverted({required String planId, required bool isPro}) {
+    capture('paywall_converted', properties: {
+      'plan_id': planId,
+      'is_pro': isPro,
+    });
+  }
+
+  void paywallRestored({required bool isPro}) {
+    capture('paywall_restored', properties: {
+      'is_pro': isPro,
+    });
+  }
 }

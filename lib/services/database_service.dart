@@ -402,6 +402,11 @@ class DatabaseService {
         );
   }
 
+  List<CategoryBudgetOverride> getCategoryBudgetOverrides(String yearMonth) {
+    if (_overrideBox == null) return [];
+    return _overrideBox!.values.where((o) => o.yearMonth == yearMonth).toList();
+  }
+
   // ==========================================
   // --- TRANSACTIONS (Core Loop) ---
   // ==========================================

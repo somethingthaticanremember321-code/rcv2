@@ -6,7 +6,9 @@ import '../models/category.dart';
 import '../models/category_budget_override.dart';
 import '../models/household.dart';
 import '../services/database_service.dart';
+import '../services/paywall_service.dart';
 import '../theme/app_theme.dart';
+import 'paywall_screen.dart';
 
 class CategoryBudgetsScreen extends StatefulWidget {
   final DateTime? initialMonth;
@@ -623,6 +625,7 @@ class CategoryBudgetEditSheet extends StatefulWidget {
 
 class _CategoryBudgetEditSheetState extends State<CategoryBudgetEditSheet> {
   final DatabaseService _db = DatabaseService();
+  final PaywallService _paywallService = PaywallService();
   late TextEditingController _baselineController;
   late TextEditingController _overrideController;
   late TextEditingController _noteController;
@@ -663,17 +666,52 @@ class _CategoryBudgetEditSheetState extends State<CategoryBudgetEditSheet> {
     super.dispose();
   }
 
+  IconData _getCategoryIcon(String iconName) {
+    switch (iconName) {
+      case 'home':
+        return Icons.home_rounded;
+      case 'shopping_cart':
+        return Icons.shopping_bag_outlined;
+      case 'school':
+        return Icons.school_outlined;
+      case 'directions_car':
+        return Icons.directions_car_outlined;
+      case 'bolt':
+        return Icons.bolt_outlined;
+      case 'cleaning_services':
+        return Icons.cleaning_services_outlined;
+      case 'medical_services':
+        return Icons.medical_services_outlined;
+      case 'restaurant':
+        return Icons.restaurant_outlined;
+      default:
+        return Icons.category_outlined;
+    }
+  }
+
   void _saveBudget() async {
     final rawBaseline = _baselineController.text.trim().replaceAll(',', '');
     final baseline = double.tryParse(rawBaseline) ?? widget.category.baselineMonthlyBudget;
+    final yearMonth = DateFormat('yyyy-MM').format(widget.selectedMonth);
 
-    // 1. Update baseline budget on category
+    // 1. If enabling a seasonal override, verify entitlement first
+    if (_isOverrideActive && widget.currentOverride == null) {
+      final existingOverrides = _db.getCategoryBudgetOverrides(yearMonth);
+      if (!_paywallService.canAddSeasonalOverride(existingOverrides.length)) {
+        final upgraded = await PaywallScreen.show(context, trigger: 'multi_seasonal_override');
+        if (upgraded != true && !_paywallService.canAddSeasonalOverride(existingOverrides.length)) {
+          return;
+        }
+      }
+    }
+
+    if (!mounted) return;
+
+    // 2. Update baseline budget on category
     final updatedCategory = widget.category.copyWith(baselineMonthlyBudget: baseline);
     await _db.updateCategory(updatedCategory);
 
-    // 2. Handle Seasonal Override
-    final yearMonth = DateFormat('yyyy-MM').format(widget.selectedMonth);
-
+    // 3. Handle Seasonal Override
     if (_isOverrideActive) {
       final rawOverride = _overrideController.text.trim().replaceAll(',', '');
       final overrideAmount = double.tryParse(rawOverride) ?? baseline;
@@ -731,42 +769,59 @@ class _CategoryBudgetEditSheetState extends State<CategoryBudgetEditSheet> {
 
             // Title
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  '${isArabic ? "ميزانية" : "Budget:"} ${widget.category.localizedName(lang)}',
-                  style: AppTheme.editorialHeading(fontSize: 19, lang: lang),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryTealLight,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    _getCategoryIcon(widget.category.iconName),
+                    color: AppTheme.primaryTeal,
+                    size: 20,
+                  ),
                 ),
-                IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.close, color: AppTheme.inkMuted, size: 20),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isArabic ? widget.category.nameAr : widget.category.nameEn,
+                        style: AppTheme.brandTitle(lang: lang).copyWith(fontSize: 18),
+                      ),
+                      Text(
+                        isArabic ? 'تعديل ميزانية التصنيف' : 'Edit Category Budget',
+                        style: AppTheme.body(fontSize: 12, color: AppTheme.inkSecondary, lang: lang),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 20),
 
-            // Baseline Monthly Budget
+            // Baseline Budget Input
             Text(
-              isArabic ? 'الميزانية الشهرية الدائمة (الأساسية)' : 'Default Monthly Baseline Budget',
-              style: AppTheme.label(fontSize: 12, lang: lang),
+              isArabic ? 'الميزانية الشهرية الأساسية:' : 'Baseline Monthly Budget:',
+              style: AppTheme.label(fontSize: 11, color: AppTheme.inkSecondary, lang: lang),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
               decoration: BoxDecoration(
                 color: AppTheme.creamBg,
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: AppTheme.surfaceBorder),
               ),
               child: Row(
                 children: [
                   Text(
                     widget.household.currencySymbol,
-                    style: AppTheme.amountMonospace(fontSize: 16, color: AppTheme.primaryTeal),
+                    style: AppTheme.body(fontSize: 14, color: AppTheme.inkSecondary, lang: lang),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: TextField(
                       controller: _baselineController,
@@ -827,7 +882,20 @@ class _CategoryBudgetEditSheetState extends State<CategoryBudgetEditSheet> {
                         value: _isOverrideActive,
                         activeThumbColor: Colors.white,
                         activeTrackColor: AppTheme.accentGold,
-                        onChanged: (val) => setState(() => _isOverrideActive = val),
+                        onChanged: (val) async {
+                          if (val && widget.currentOverride == null) {
+                            final yearMonth = DateFormat('yyyy-MM').format(widget.selectedMonth);
+                            final existingOverrides = _db.getCategoryBudgetOverrides(yearMonth);
+                            if (!_paywallService.canAddSeasonalOverride(existingOverrides.length)) {
+                              final upgraded = await PaywallScreen.show(context, trigger: 'multi_seasonal_override');
+                              if (upgraded != true && !_paywallService.canAddSeasonalOverride(existingOverrides.length)) {
+                                return;
+                              }
+                            }
+                          }
+                          if (!mounted) return;
+                          setState(() => _isOverrideActive = val);
+                        },
                       ),
                     ],
                   ),

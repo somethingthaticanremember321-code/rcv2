@@ -7,7 +7,9 @@ import '../models/household.dart';
 import '../models/member.dart';
 import '../models/transaction.dart';
 import '../services/database_service.dart';
+import '../services/paywall_service.dart';
 import '../theme/app_theme.dart';
+import 'paywall_screen.dart';
 
 class HouseholdSplitScreen extends StatefulWidget {
   final DateTime? initialMonth;
@@ -23,6 +25,7 @@ class HouseholdSplitScreen extends StatefulWidget {
 
 class _HouseholdSplitScreenState extends State<HouseholdSplitScreen> {
   final DatabaseService _db = DatabaseService();
+  final PaywallService _paywallService = PaywallService();
   late DateTime _selectedMonth;
   late Household _household;
 
@@ -80,6 +83,19 @@ class _HouseholdSplitScreenState extends State<HouseholdSplitScreen> {
   }
 
   void _openMemberSheet([Member? existingMember]) async {
+    // If adding a new member and not Pro, check entitlement limit
+    if (existingMember == null) {
+      final currentMembers = _db.getMembers();
+      if (!_paywallService.canAddMember(currentMembers.length)) {
+        final upgraded = await PaywallScreen.show(context, trigger: 'unlimited_members');
+        if (upgraded != true && !_paywallService.canAddMember(currentMembers.length)) {
+          return;
+        }
+      }
+    }
+
+    if (!mounted) return;
+
     final updated = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,

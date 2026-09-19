@@ -6,7 +6,10 @@ import '../models/household.dart';
 import '../models/member.dart';
 import '../models/transaction.dart';
 import '../services/database_service.dart';
+import '../services/export_service.dart';
+import '../services/paywall_service.dart';
 import '../theme/app_theme.dart';
+import 'paywall_screen.dart';
 import 'quick_add_transaction_sheet.dart';
 
 class HouseholdDashboardScreen extends StatefulWidget {
@@ -23,6 +26,7 @@ class HouseholdDashboardScreen extends StatefulWidget {
 
 class _HouseholdDashboardScreenState extends State<HouseholdDashboardScreen> {
   final DatabaseService _db = DatabaseService();
+  final PaywallService _paywallService = PaywallService();
   late DateTime _selectedMonth;
   late Household _household;
 
@@ -45,6 +49,46 @@ class _HouseholdDashboardScreenState extends State<HouseholdDashboardScreen> {
     await _db.updateHousehold(updated);
     _reloadHousehold();
     widget.onToggleLanguage?.call();
+  }
+
+  void _exportTransactions() async {
+    final isArabic = _household.preferredLanguage == 'ar';
+    if (!_paywallService.canExportData) {
+      final upgraded = await PaywallScreen.show(context, trigger: 'dashboard_export');
+      if (upgraded != true) return;
+    }
+
+    final transactions = _db.getTransactions();
+    if (transactions.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isArabic ? 'لا توجد معاملات مسجلة للتصدير.' : 'No transactions recorded to export.',
+          ),
+          backgroundColor: AppTheme.terracotta,
+        ),
+      );
+      return;
+    }
+
+    final categories = {for (var c in _db.getCategories()) c.id: c};
+    final members = {for (var m in _db.getMembers()) m.id: m};
+    final csv = ExportService().generateTransactionsCsv(
+      household: _household,
+      transactions: transactions,
+      categories: categories,
+      members: members,
+    );
+
+    final filename = 'ahl_transactions_${DateFormat('yyyyMMdd').format(DateTime.now())}.csv';
+    await ExportService().shareCsv(
+      csvContent: csv,
+      filename: filename,
+      subject: isArabic
+          ? 'سجل معاملات أسرة ${_household.name}'
+          : '${_household.name} Household Transactions',
+    );
   }
 
   void _changeMonth(int deltaMonths) {
@@ -148,6 +192,64 @@ class _HouseholdDashboardScreenState extends State<HouseholdDashboardScreen> {
             ],
           ),
           actions: [
+            // Export CSV Action
+            IconButton(
+              icon: const Icon(Icons.file_download_outlined, color: AppTheme.primaryTeal, size: 22),
+              tooltip: isArabic ? 'تصدير البيانات (إكسل / CSV)' : 'Export Data (CSV)',
+              onPressed: _exportTransactions,
+            ),
+            // Pro Status / Upgrade Pill
+            ValueListenableBuilder<bool>(
+              valueListenable: _paywallService.isPro,
+              builder: (context, isPro, _) {
+                if (isPro) {
+                  return Container(
+                    margin: const EdgeInsetsDirectional.only(end: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppTheme.accentGoldLight,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppTheme.accentGoldBorder),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.star_rounded, size: 14, color: AppTheme.accentGold),
+                        const SizedBox(width: 4),
+                        Text(
+                          isArabic ? 'برو' : 'PRO',
+                          style: AppTheme.body(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.accentGold,
+                            lang: lang,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+                return Padding(
+                  padding: const EdgeInsetsDirectional.only(end: 8),
+                  child: ActionChip(
+                    onPressed: () => PaywallScreen.show(context, trigger: 'dashboard_appbar'),
+                    avatar: const Icon(Icons.workspace_premium_rounded, size: 14, color: AppTheme.accentGold),
+                    label: Text(
+                      isArabic ? 'أهل برو' : 'Get Pro',
+                      style: AppTheme.body(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.accentGold,
+                        lang: lang,
+                      ),
+                    ),
+                    backgroundColor: AppTheme.accentGoldLight,
+                    side: const BorderSide(color: AppTheme.accentGoldBorder),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                );
+              },
+            ),
             // Instant Language Switcher Button
             Padding(
               padding: const EdgeInsetsDirectional.only(end: 12),

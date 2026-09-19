@@ -6,8 +6,11 @@ import '../models/member.dart';
 import '../models/zakat_asset.dart';
 import '../models/zakat_payment.dart';
 import '../services/database_service.dart';
+import '../services/export_service.dart';
+import '../services/paywall_service.dart';
 import '../theme/app_theme.dart';
 import 'nisab_settings_dialog.dart';
+import 'paywall_screen.dart';
 import 'zakat_asset_sheet.dart';
 import 'zakat_payment_sheet.dart';
 
@@ -20,6 +23,7 @@ class ZakatTrackerScreen extends StatefulWidget {
 
 class _ZakatTrackerScreenState extends State<ZakatTrackerScreen> {
   final DatabaseService _db = DatabaseService();
+  final PaywallService _paywallService = PaywallService();
   late Household _household;
   String _selectedPeriod = '1447 AH';
   int _activeSegmentIndex = 0; // 0: Assets, 1: Payments
@@ -70,6 +74,18 @@ class _ZakatTrackerScreenState extends State<ZakatTrackerScreen> {
   }
 
   void _openAssetSheet([ZakatAsset? asset]) async {
+    if (asset == null) {
+      final assets = _db.getZakatAssets();
+      if (!_paywallService.canAddZakatAsset(assets.length)) {
+        final upgraded = await PaywallScreen.show(context, trigger: 'zakat_multi_assets');
+        if (upgraded != true && !_paywallService.canAddZakatAsset(assets.length)) {
+          return;
+        }
+      }
+    }
+
+    if (!mounted) return;
+
     final updated = await ZakatAssetSheet.show(
       context,
       household: _household,
@@ -78,6 +94,37 @@ class _ZakatTrackerScreenState extends State<ZakatTrackerScreen> {
     if (updated == true && mounted) {
       setState(() {});
     }
+  }
+
+  void _exportZakatReport() async {
+    final isArabic = _household.preferredLanguage == 'ar';
+    if (!_paywallService.canExportData) {
+      final upgraded = await PaywallScreen.show(context, trigger: 'zakat_export');
+      if (upgraded != true) return;
+    }
+
+    if (!mounted) return;
+
+    final summary = _db.getZakatObligationSummary(obligationPeriod: _selectedPeriod);
+    final assets = _db.getZakatAssets();
+    final payments = _db.getZakatPayments(obligationPeriod: _selectedPeriod);
+
+    final csv = ExportService().generateZakatReportCsv(
+      household: _household,
+      summary: summary,
+      assets: assets,
+      payments: payments,
+    );
+
+    final cleanPeriod = _selectedPeriod.replaceAll(' ', '_');
+    final filename = 'ahl_zakat_report_${cleanPeriod}_${DateFormat('yyyyMMdd').format(DateTime.now())}.csv';
+    await ExportService().shareCsv(
+      csvContent: csv,
+      filename: filename,
+      subject: isArabic
+          ? 'تقرير حساب الزكاة الشرعي لأسرة ${_household.name}'
+          : '${_household.name} Shariah Zakat Report',
+    );
   }
 
   void _openPaymentSheet() async {
@@ -111,6 +158,11 @@ class _ZakatTrackerScreenState extends State<ZakatTrackerScreen> {
             style: AppTheme.brandTitle(lang: lang),
           ),
           actions: [
+            IconButton(
+              icon: const Icon(Icons.file_download_outlined, color: AppTheme.accentGold, size: 22),
+              tooltip: isArabic ? 'تصدير تقرير الزكاة (إكسل / CSV)' : 'Export Zakat Report (CSV)',
+              onPressed: _exportZakatReport,
+            ),
             IconButton(
               icon: const Icon(Icons.tune_rounded, color: AppTheme.accentGold),
               tooltip: isArabic ? 'إعدادات النصاب' : 'Nisab Settings',
