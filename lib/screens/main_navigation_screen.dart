@@ -7,6 +7,7 @@ import 'category_budgets_screen.dart';
 import 'household_dashboard_screen.dart';
 import 'household_split_screen.dart';
 import 'quick_add_transaction_sheet.dart';
+import 'zakat_tracker_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   final VoidCallback? onToggleLanguage;
@@ -60,6 +61,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       ),
       const CategoryBudgetsScreen(),
       const HouseholdSplitScreen(),
+      const ZakatTrackerScreen(),
     ];
 
     return Directionality(
@@ -100,6 +102,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 icon: const Icon(Icons.people_outline_rounded, color: AppTheme.inkSecondary),
                 selectedIcon: const Icon(Icons.people_rounded, color: AppTheme.primaryTeal),
                 label: isArabic ? 'الأسرة' : 'Household',
+              ),
+              NavigationDestination(
+                icon: const Icon(Icons.balance_outlined, color: AppTheme.inkSecondary),
+                selectedIcon: const Icon(Icons.balance_rounded, color: AppTheme.accentGold),
+                label: isArabic ? 'الزكاة' : 'Zakat',
               ),
             ],
           ),
