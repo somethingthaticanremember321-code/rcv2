@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 
-import 'screens/household_dashboard_screen.dart';
+import 'screens/main_navigation_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'services/database_service.dart';
 import 'theme/app_theme.dart';
@@ -51,7 +51,7 @@ class _AhlAppState extends State<AhlApp> {
         );
       },
       home: hasSeenOnboarding
-          ? HouseholdDashboardScreen(
+          ? MainNavigationScreen(
               onToggleLanguage: () => setState(() {}),
             )
           : const OnboardingScreen(),

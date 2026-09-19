@@ -117,6 +117,11 @@ class DatabaseService {
     return _zakatAssetBox!.listenable();
   }
 
+  ValueListenable<Box<CategoryBudgetOverride>> get overrideListenable {
+    if (_overrideBox == null) throw Exception('Database not initialized');
+    return _overrideBox!.listenable();
+  }
+
   ValueListenable<Box<ZakatPayment>> get zakatPaymentListenable {
     if (_zakatPaymentBox == null) throw Exception('Database not initialized');
     return _zakatPaymentBox!.listenable();
@@ -388,6 +393,13 @@ class DatabaseService {
     if (existing != null) {
       await _overrideBox!.delete(existing.id);
     }
+  }
+
+  CategoryBudgetOverride? getCategoryBudgetOverride(String categoryId, String yearMonth) {
+    return _overrideBox?.values.cast<CategoryBudgetOverride?>().firstWhere(
+          (o) => o?.categoryId == categoryId && o?.yearMonth == yearMonth,
+          orElse: () => null,
+        );
   }
 
   // ==========================================

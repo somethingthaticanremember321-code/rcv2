@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../services/database_service.dart';
 import '../theme/app_theme.dart';
-import 'household_dashboard_screen.dart';
+import 'main_navigation_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -139,7 +139,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (_) => const HouseholdDashboardScreen(),
+        builder: (_) => const MainNavigationScreen(),
       ),
     );
   }
