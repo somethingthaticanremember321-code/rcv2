@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy - DashTally</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper-bg: #FBFBF9;
+      --surface-card: #FFFFFF;
+      --surface-border: #E8E6DF;
+      --ink-primary: #191817;
+      --ink-secondary: #595752;
+      --ink-muted: #8C8980;
+      --pine-primary: #0F5132;
+      --pine-light: #E9F4EE;
+      --pine-border: #B5DEC9;
+      --ochre-accent: #C27803;
+      --ochre-light: #FEF7EA;
+      --terracotta: #C2410C;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: var(--paper-bg);
+      color: var(--ink-primary);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.6;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 780px;
+      margin: 0 auto;
+      background: var(--surface-card);
+      border: 1px solid var(--surface-border);
+      border-radius: 16px;
+      padding: 48px;
+      box-shadow: 0 4px 20px rgba(15, 81, 50, 0.04);
+    }
+    .header {
+      border-bottom: 1px solid var(--surface-border);
+      padding-bottom: 24px;
+      margin-bottom: 32px;
+    }
+    .badge {
+      display: inline-block;
+      background: var(--pine-light);
+      color: var(--pine-primary);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-family: 'Fraunces', serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--pine-primary);
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+    }
+    .meta {
+      font-size: 13px;
+      color: var(--ink-muted);
+    }
+    .summary-box {
+      background: var(--pine-light);
+      border: 1px solid var(--pine-border);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 32px;
+      font-size: 14px;
+      color: var(--pine-primary);
+      font-weight: 500;
+    }
+    h2 {
+      font-family: 'Fraunces', serif;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--ink-primary);
+      margin-top: 32px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      background: var(--pine-light);
+      color: var(--pine-primary);
+      border-radius: 6px;
+      font-family: 'Space Grotesk', monospace;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    p {
+      color: var(--ink-secondary);
+      font-size: 15px;
+      margin-bottom: 16px;
+    }
+    ul {
+      margin-left: 20px;
+      margin-bottom: 16px;
+      color: var(--ink-secondary);
+      font-size: 15px;
+    }
+    li {
+      margin-bottom: 8px;
+    }
+    strong {
+      color: var(--ink-primary);
+    }
+    .footer {
+      border-top: 1px solid var(--surface-border);
+      padding-top: 24px;
+      margin-top: 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: var(--ink-muted);
+    }
+    .footer a {
+      color: var(--pine-primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .footer a:hover {
+      text-decoration: underline;
+    }
+    @media (max-width: 640px) {
+      body { padding: 16px; }
+      .container { padding: 24px; }
+      h1 { font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <span class="badge">DashTally Legal</span>
+      <h1>Privacy Policy</h1>
+      <div class="meta">Effective Date: September 16, 2026 &bull; Version 1.0</div>
+    </div>
+
+    <div class="summary-box">
+      <strong>Private-by-Design Architecture:</strong> DashTally processes receipt photos locally on your device using on-device optical character recognition (OCR). Your original receipt photos are never uploaded to, stored on, or viewed by external cloud servers.
+    </div>
+
+    <h2><span class="num">1</span> Information We Do NOT Collect</h2>
+    <p>DashTally is deliberately built to minimize data collection. We specifically do not collect or store:</p>
+    <ul>
+      <li><strong>Receipt Images / Photos:</strong> Receipt photos taken with your camera or imported from your photo library are saved strictly in your device's local sandbox storage. Image files never leave your device.</li>
+      <li><strong>Banking & Payment Credentials:</strong> We never ask for, access, or store your bank accounts, credit card numbers, debit cards, or financial logins.</li>
+      <li><strong>Precise Location Data:</strong> We do not track or store your physical GPS location.</li>
+    </ul>
+
+    <h2><span class="num">2</span> Data Processing & AI Text Structuring</h2>
+    <p>To convert your receipt text into organized columns (merchant name, transaction date, sales tax, total amount, and category):</p>
+    <ul>
+      <li><strong>Local OCR Extraction:</strong> Google ML Kit performs on-device text recognition directly on your phone's processor.</li>
+      <li><strong>Secure Transmission of Text Lines:</strong> Only the extracted raw text characters are transmitted over an encrypted TLS 1.3 connection to a secure AI structuring API solely for JSON field parsing.</li>
+      <li><strong>Zero Model Training:</strong> Under our enterprise privacy commitments, receipt text is processed in memory and is <em>never</em> stored, retained, or used to train artificial intelligence models.</li>
+      <li><strong>Local Storage:</strong> Once structured fields are returned, they are saved exclusively into your local on-device database.</li>
+    </ul>
+
+    <h2><span class="num">3</span> Product Telemetry & Analytics</h2>
+    <p>We use PostHog to collect minimal, aggregated product telemetry to monitor application stability, crash diagnostics, and measure conversion funnels:</p>
+    <ul>
+      <li><strong>What We Track:</strong> App installation events, scan attempt counts, feature usage taps, and paywall conversions.</li>
+      <li><strong>What We NEVER Track:</strong> We never log, transmit, or attach receipt image files, merchant names, individual line items, or financial dollar amounts to analytics events.</li>
+    </ul>
+
+    <h2><span class="num">4</span> Purchases & In-App Subscriptions</h2>
+    <p>All in-app purchases, annual subscriptions, and Lifetime Pro licenses are processed directly through the official Google Play Billing system (Android) or Apple App Store In-App Purchases (iOS). DashTally does not collect or store credit card numbers. Purchase entitlement verification is managed securely via RevenueCat using anonymous user identifiers.</p>
+
+    <h2><span class="num">5</span> Data Ownership, Export & Deletion</h2>
+    <p>You retain 100% ownership of your business and financial records:</p>
+    <ul>
+      <li><strong>Instant CSV Export:</strong> You can export your entire ledger to a clean CSV file compatible with Microsoft Excel, Google Sheets, QuickBooks, or Numbers at any time.</li>
+      <li><strong>1-Tap Permanent Deletion:</strong> You can delete individual receipts or purge your entire database at any time by navigating to <em>Settings &rarr; Clear All Receipts</em>. Because records are stored locally, clearing your data permanently removes it from your phone immediately.</li>
+    </ul>
+
+    <h2><span class="num">6</span> Third-Party Services</h2>
+    <p>DashTally interacts with the following service providers solely to provide core application functionality:</p>
+    <ul>
+      <li><strong>Google ML Kit:</strong> On-device text recognition library (runs locally on CPU/NPU).</li>
+      <li><strong>RevenueCat:</strong> In-app purchase verification and subscription entitlement management.</li>
+      <li><strong>PostHog:</strong> Anonymized product analytics and diagnostic telemetry.</li>
+    </ul>
+
+    <h2><span class="num">7</span> Contact Us</h2>
+    <p>If you have questions regarding this Privacy Policy or your data rights, please contact our team at:</p>
+    <p><strong>Email:</strong> <a href="mailto:support@dashtallyapp.com" style="color: var(--pine-primary);">support@dashtallyapp.com</a></p>
+
+    <div class="footer">
+      <div>&copy; 2026 DashTally by IncomeGen. All rights reserved.</div>
+      <div><a href="index.html">&larr; Home</a> &bull; <a href="terms.html">Terms of Service &rarr;</a></div>
+    </div>
+  </div>
+</body>
+</html>
