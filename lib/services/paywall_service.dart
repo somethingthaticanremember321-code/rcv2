@@ -1,15 +1,15 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
+import '../config/api_config.dart';
 
 class PaywallService {
   static final PaywallService _instance = PaywallService._internal();
   factory PaywallService() => _instance;
   PaywallService._internal();
 
-  // RevenueCat API keys
-  static const String _appleApiKey = 'appl_YOUR_APPLE_API_KEY';
-  static const String _googleApiKey = 'goog_tOgGGRIeVtPOJQSsoyzPnFBdroK';
+  static const String _appleApiKey = ApiConfig.revenueCatAppleApiKey;
+  static const String _googleApiKey = ApiConfig.revenueCatGoogleApiKey;
 
   static const bool _forceFreePro = bool.fromEnvironment('FREE_PRO', defaultValue: false);
   ValueNotifier<bool> isPro = ValueNotifier(_forceFreePro);
@@ -57,7 +57,7 @@ class PaywallService {
 
   Future<bool> purchasePro(Package package) async {
     try {
-      final result = await Purchases.purchasePackage(package);
+      final result = await Purchases.purchase(PurchaseParams.package(package));
       isPro.value = result.customerInfo.entitlements.all['pro']?.isActive ?? false;
       return isPro.value;
     } catch (e) {

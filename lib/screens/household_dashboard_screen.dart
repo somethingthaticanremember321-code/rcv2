@@ -1,0 +1,804 @@
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart' hide TextDirection;
+
+import '../models/category.dart';
+import '../models/household.dart';
+import '../models/member.dart';
+import '../models/transaction.dart';
+import '../services/database_service.dart';
+import '../theme/app_theme.dart';
+import 'quick_add_transaction_sheet.dart';
+
+class HouseholdDashboardScreen extends StatefulWidget {
+  final VoidCallback? onToggleLanguage;
+
+  const HouseholdDashboardScreen({
+    super.key,
+    this.onToggleLanguage,
+  });
+
+  @override
+  State<HouseholdDashboardScreen> createState() => _HouseholdDashboardScreenState();
+}
+
+class _HouseholdDashboardScreenState extends State<HouseholdDashboardScreen> {
+  final DatabaseService _db = DatabaseService();
+  late DateTime _selectedMonth;
+  late Household _household;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedMonth = DateTime(DateTime.now().year, DateTime.now().month, 1);
+    _household = _db.getHousehold();
+  }
+
+  void _reloadHousehold() {
+    setState(() {
+      _household = _db.getHousehold();
+    });
+  }
+
+  void _toggleLanguage() async {
+    final newLang = _household.preferredLanguage == 'ar' ? 'en' : 'ar';
+    final updated = _household.copyWith(preferredLanguage: newLang);
+    await _db.updateHousehold(updated);
+    _reloadHousehold();
+    widget.onToggleLanguage?.call();
+  }
+
+  void _changeMonth(int deltaMonths) {
+    setState(() {
+      _selectedMonth = DateTime(
+        _selectedMonth.year,
+        _selectedMonth.month + deltaMonths,
+        1,
+      );
+    });
+  }
+
+  void _resetToCurrentMonth() {
+    final now = DateTime.now();
+    setState(() {
+      _selectedMonth = DateTime(now.year, now.month, 1);
+    });
+  }
+
+  IconData _getCategoryIcon(String iconName) {
+    switch (iconName) {
+      case 'home':
+        return Icons.home_rounded;
+      case 'shopping_cart':
+        return Icons.shopping_bag_outlined;
+      case 'school':
+        return Icons.school_outlined;
+      case 'directions_car':
+        return Icons.directions_car_outlined;
+      case 'bolt':
+        return Icons.bolt_outlined;
+      case 'cleaning_services':
+        return Icons.cleaning_services_outlined;
+      case 'medical_services':
+        return Icons.medical_services_outlined;
+      case 'restaurant':
+        return Icons.restaurant_outlined;
+      default:
+        return Icons.category_outlined;
+    }
+  }
+
+  Color _parseColor(String hex) {
+    try {
+      final clean = hex.replaceAll('#', '');
+      return Color(int.parse('FF$clean', radix: 16));
+    } catch (_) {
+      return AppTheme.primaryTeal;
+    }
+  }
+
+  String _formatCurrency(double amount) {
+    final formatter = NumberFormat('#,##0.00', 'en_US');
+    return '${formatter.format(amount)} ${_household.currencySymbol}';
+  }
+
+  void _openQuickAdd() async {
+    final added = await QuickAddTransactionSheet.show(
+      context,
+      household: _household,
+    );
+    if (added == true && mounted) {
+      setState(() {});
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isArabic = _household.preferredLanguage == 'ar';
+    final lang = _household.preferredLanguage;
+    final textDirection = isArabic ? TextDirection.rtl : TextDirection.ltr;
+
+    return Directionality(
+      textDirection: textDirection,
+      child: Scaffold(
+        backgroundColor: AppTheme.creamBg,
+        appBar: AppBar(
+          backgroundColor: AppTheme.creamBg,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          title: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryTealLight,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.family_restroom_rounded,
+                  color: AppTheme.primaryTeal,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                _household.name,
+                style: AppTheme.brandTitle(lang: lang),
+              ),
+            ],
+          ),
+          actions: [
+            // Instant Language Switcher Button
+            Padding(
+              padding: const EdgeInsetsDirectional.only(end: 12),
+              child: ActionChip(
+                onPressed: _toggleLanguage,
+                avatar: const Icon(Icons.language_rounded, size: 16, color: AppTheme.primaryTeal),
+                label: Text(
+                  isArabic ? 'English' : 'العربية',
+                  style: AppTheme.bodyMedium(fontSize: 12, color: AppTheme.primaryTeal, lang: lang),
+                ),
+                backgroundColor: AppTheme.primaryTealLight,
+                side: const BorderSide(color: AppTheme.primaryTealBorder),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+            ),
+          ],
+        ),
+        body: SafeArea(
+          child: ValueListenableBuilder(
+            valueListenable: _db.transactionListenable,
+            builder: (context, box, child) {
+              final summary = _db.getMonthlySummary(_selectedMonth);
+              final transactions = _db.getTransactions(month: _selectedMonth);
+              final members = _db.getMembers();
+              final memberSpending = _db.getMemberSpendingBreakdown(_selectedMonth);
+              final categories = {for (var c in _db.getCategories()) c.id: c};
+              final memberMap = {for (var m in members) m.id: m};
+
+              final isCurrentMonth = _selectedMonth.year == DateTime.now().year &&
+                  _selectedMonth.month == DateTime.now().month;
+
+              return RefreshIndicator(
+                onRefresh: () async {
+                  _reloadHousehold();
+                  setState(() {});
+                },
+                color: AppTheme.primaryTeal,
+                child: CustomScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  slivers: [
+                    // Top spacing
+                    const SliverToBoxAdapter(child: SizedBox(height: 8)),
+
+                    // Month Selector Bar
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: _buildMonthSelector(lang, isCurrentMonth),
+                      ),
+                    ),
+
+                    const SliverToBoxAdapter(child: SizedBox(height: 14)),
+
+                    // Hero Card: Net Household Position
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: _buildHeroCard(summary, lang),
+                      ),
+                    ),
+
+                    const SliverToBoxAdapter(child: SizedBox(height: 14)),
+
+                    // Contributor Breakdown Bar
+                    if (summary.totalExpense > 0 && memberSpending.isNotEmpty)
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: _buildContributorCard(
+                            memberSpending,
+                            summary.totalExpense,
+                            memberMap,
+                            lang,
+                          ),
+                        ),
+                      ),
+
+                    const SliverToBoxAdapter(child: SizedBox(height: 18)),
+
+                    // Quick-Add Action Button
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: ElevatedButton.icon(
+                          onPressed: _openQuickAdd,
+                          icon: const Icon(Icons.add_circle_outline_rounded, color: Colors.white, size: 20),
+                          label: Text(
+                            isArabic ? 'إضافة عملية جديدة' : 'Add Transaction',
+                            style: AppTheme.bodyMedium(fontSize: 16, color: Colors.white, lang: lang),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.primaryTeal,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SliverToBoxAdapter(child: SizedBox(height: 24)),
+
+                    // Section Heading: Activity Stream
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              isArabic ? 'سجل العمليات' : 'Monthly Activity',
+                              style: AppTheme.label(fontSize: 13, color: AppTheme.inkSecondary, lang: lang),
+                            ),
+                            Text(
+                              '${transactions.length} ${isArabic ? "عمليات" : "records"}',
+                              style: AppTheme.amountMonospace(fontSize: 12, color: AppTheme.inkMuted),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SliverToBoxAdapter(child: SizedBox(height: 8)),
+
+                    // Transaction Feed
+                    if (transactions.isEmpty)
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: _buildEmptyState(isArabic, lang),
+                      )
+                    else
+                      SliverPadding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        sliver: SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              final tx = transactions[index];
+                              final cat = categories[tx.categoryId];
+                              final member = memberMap[tx.memberId];
+
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: _buildTransactionTile(
+                                  tx,
+                                  cat,
+                                  member,
+                                  lang,
+                                ),
+                              );
+                            },
+                            childCount: transactions.length,
+                          ),
+                        ),
+                      ),
+
+                    const SliverToBoxAdapter(child: SizedBox(height: 40)),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  // --- UI COMPONENTS ---
+
+  Widget _buildMonthSelector(String lang, bool isCurrentMonth) {
+    final monthFormat = DateFormat('MMMM yyyy', lang == 'ar' ? 'ar' : 'en');
+    final monthLabel = monthFormat.format(_selectedMonth);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceCard,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppTheme.surfaceBorder),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.chevron_left_rounded, color: AppTheme.inkPrimary),
+            onPressed: () => _changeMonth(-1),
+            tooltip: lang == 'ar' ? 'الشهر السابق' : 'Previous Month',
+          ),
+          GestureDetector(
+            onTap: _resetToCurrentMonth,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  monthLabel,
+                  style: AppTheme.bodyMedium(fontSize: 15, lang: lang),
+                ),
+                if (!isCurrentMonth) ...[
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppTheme.accentGoldLight,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: AppTheme.accentGoldBorder),
+                    ),
+                    child: Text(
+                      lang == 'ar' ? 'العودة لليوم' : 'Today',
+                      style: AppTheme.label(fontSize: 10, color: AppTheme.accentGold, lang: lang),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.chevron_right_rounded, color: AppTheme.inkPrimary),
+            onPressed: () => _changeMonth(1),
+            tooltip: lang == 'ar' ? 'الشهر القادم' : 'Next Month',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeroCard(MonthlySummary summary, String lang) {
+    final isPositive = summary.netPosition >= 0;
+    final isArabic = lang == 'ar';
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceCard,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.surfaceBorder),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.inkPrimary.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Subtitle tag
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                isArabic ? 'الصافي المالي للأسرة' : 'Net Household Position',
+                style: AppTheme.label(fontSize: 13, color: AppTheme.inkSecondary, lang: lang),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isPositive ? AppTheme.primaryTealLight : AppTheme.terracottaLight,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  isPositive
+                      ? (isArabic ? 'وفر إيجابي' : 'Surplus')
+                      : (isArabic ? 'عجز شهري' : 'Deficit'),
+                  style: AppTheme.label(
+                    fontSize: 11,
+                    color: isPositive ? AppTheme.primaryTeal : AppTheme.terracotta,
+                    lang: lang,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+
+          // The One Big Number: Net Position in IBM Plex Mono + Newsreader
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: isArabic ? Alignment.centerRight : Alignment.centerLeft,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Text(
+                  _formatCurrency(summary.netPosition),
+                  style: AppTheme.amountMonospace(
+                    fontSize: 34,
+                    fontWeight: FontWeight.w700,
+                    color: isPositive ? AppTheme.primaryTeal : AppTheme.terracotta,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 18),
+          const Divider(height: 1, color: AppTheme.surfaceBorder),
+          const SizedBox(height: 14),
+
+          // Inflow and Outflow Sub-Metrics
+          Row(
+            children: [
+              // Inflow (Income)
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.arrow_downward_rounded, size: 14, color: AppTheme.primaryTeal),
+                        const SizedBox(width: 4),
+                        Text(
+                          isArabic ? 'إجمالي الدخل (+)' : 'Total Inflow (+)',
+                          style: AppTheme.label(fontSize: 11, color: AppTheme.inkMuted, lang: lang),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _formatCurrency(summary.totalIncome),
+                      style: AppTheme.amountMonospace(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.primaryTeal,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              Container(height: 28, width: 1, color: AppTheme.surfaceBorder),
+
+              // Outflow (Expenses)
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.only(start: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.arrow_upward_rounded, size: 14, color: AppTheme.terracotta),
+                          const SizedBox(width: 4),
+                          Text(
+                            isArabic ? 'إجمالي المصروف (-)' : 'Total Outflow (-)',
+                            style: AppTheme.label(fontSize: 11, color: AppTheme.inkMuted, lang: lang),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _formatCurrency(summary.totalExpense),
+                        style: AppTheme.amountMonospace(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.terracotta,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContributorCard(
+    Map<String, double> memberSpending,
+    double totalExpense,
+    Map<String, Member> memberMap,
+    String lang,
+  ) {
+    final isArabic = lang == 'ar';
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceCard,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.surfaceBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                isArabic ? 'توزيع الإنفاق حسب المساهم' : 'Contributor Spending Split',
+                style: AppTheme.label(fontSize: 12, color: AppTheme.inkSecondary, lang: lang),
+              ),
+              const Icon(Icons.pie_chart_outline_rounded, size: 16, color: AppTheme.inkMuted),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // Multi-segmented bar
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: SizedBox(
+              height: 10,
+              child: Row(
+                children: memberSpending.entries.map((e) {
+                  final member = memberMap[e.key];
+                  final ratio = totalExpense > 0 ? (e.value / totalExpense) : 0.0;
+                  final color = _parseColor(member?.colorHex ?? '#0F6E56');
+
+                  return Expanded(
+                    flex: (ratio * 1000).toInt().clamp(1, 1000),
+                    child: Container(color: color),
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // Member labels with percentage
+          Wrap(
+            spacing: 12,
+            runSpacing: 6,
+            children: memberSpending.entries.map((e) {
+              final member = memberMap[e.key];
+              final ratio = totalExpense > 0 ? (e.value / totalExpense * 100) : 0.0;
+              final color = _parseColor(member?.colorHex ?? '#0F6E56');
+
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${member?.name ?? "عضو"}: ${ratio.toStringAsFixed(0)}%',
+                    style: AppTheme.body(fontSize: 12, color: AppTheme.inkSecondary, lang: lang),
+                  ),
+                  const SizedBox(width: 2),
+                  Text(
+                    '(${_formatCurrency(e.value)})',
+                    style: AppTheme.amountMonospace(fontSize: 11, color: AppTheme.inkMuted),
+                  ),
+                ],
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTransactionTile(
+    Transaction tx,
+    Category? cat,
+    Member? member,
+    String lang,
+  ) {
+    final isExpense = tx.isExpense;
+    final isArabic = lang == 'ar';
+    final memberColor = _parseColor(member?.colorHex ?? '#0F6E56');
+
+    return Dismissible(
+      key: Key(tx.id),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        alignment: isArabic ? Alignment.centerLeft : Alignment.centerRight,
+        decoration: BoxDecoration(
+          color: AppTheme.terracotta,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: const Icon(Icons.delete_outline_rounded, color: Colors.white),
+      ),
+      confirmDismiss: (direction) async {
+        return await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text(
+              isArabic ? 'حذف العملية' : 'Delete Transaction',
+              style: AppTheme.editorialHeading(fontSize: 18, lang: lang),
+            ),
+            content: Text(
+              isArabic
+                  ? 'هل أنت متأكد من حذف هذه العملية من سجل الأسرة؟'
+                  : 'Are you sure you want to delete this transaction?',
+              style: AppTheme.body(lang: lang),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(false),
+                child: Text(isArabic ? 'إلغاء' : 'Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(true),
+                style: TextButton.styleFrom(foregroundColor: AppTheme.terracotta),
+                child: Text(isArabic ? 'حذف' : 'Delete'),
+              ),
+            ],
+          ),
+        );
+      },
+      onDismissed: (_) async {
+        await _db.deleteTransaction(tx.id);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(isArabic ? 'تم حذف العملية' : 'Transaction deleted'),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceCard,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppTheme.surfaceBorder),
+        ),
+        child: Row(
+          children: [
+            // Category Icon
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: isExpense ? AppTheme.surfaceMuted : AppTheme.primaryTealLight,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                _getCategoryIcon(cat?.iconName ?? 'category'),
+                size: 20,
+                color: isExpense ? AppTheme.inkPrimary : AppTheme.primaryTeal,
+              ),
+            ),
+            const SizedBox(width: 12),
+
+            // Category name + Contributor + Note
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          cat?.localizedName(lang) ?? (isExpense ? 'مصروف' : 'دخل'),
+                          style: AppTheme.bodyMedium(fontSize: 14, lang: lang),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+
+                      // Member Chip
+                      if (member != null)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: memberColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: memberColor.withValues(alpha: 0.3)),
+                          ),
+                          child: Text(
+                            member.name,
+                            style: AppTheme.label(fontSize: 10, color: memberColor, lang: lang),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Text(
+                        DateFormat('d MMM', lang == 'ar' ? 'ar' : 'en').format(tx.date),
+                        style: AppTheme.body(fontSize: 12, color: AppTheme.inkMuted, lang: lang),
+                      ),
+                      if (tx.note != null && tx.note!.isNotEmpty) ...[
+                        const SizedBox(width: 6),
+                        Text('•', style: AppTheme.body(fontSize: 12, color: AppTheme.inkMuted, lang: lang)),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            tx.note!,
+                            style: AppTheme.body(fontSize: 12, color: AppTheme.inkSecondary, lang: lang),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            // Monospaced Amount
+            Text(
+              '${isExpense ? "-" : "+"} ${_formatCurrency(tx.amount)}',
+              style: AppTheme.amountMonospace(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: isExpense ? AppTheme.terracotta : AppTheme.primaryTeal,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(bool isArabic, String lang) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppTheme.surfaceMuted,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppTheme.surfaceBorder),
+              ),
+              child: const Icon(
+                Icons.receipt_long_outlined,
+                size: 40,
+                color: AppTheme.inkMuted,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              isArabic ? 'لا توجد عمليات مسجلة لهذا الشهر' : 'No transactions this month',
+              style: AppTheme.editorialHeading(fontSize: 18, lang: lang),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              isArabic
+                  ? 'سجل مصاريف ودخل الأسرة بكل سهولة لمتابعة الصافي والزكاة'
+                  : 'Log joint expenses and income to track net household position',
+              style: AppTheme.body(fontSize: 13, color: AppTheme.inkMuted, lang: lang),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

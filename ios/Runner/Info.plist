@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>DashTally</string>
+	<string>Ahl</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -15,11 +15,17 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>DashTally</string>
+	<string>Ahl</string>
+	<key>com.posthog.posthog.API_KEY</key>
+	<string>phc_CfnjTMP3ZUUP4gBjC6o7LgULB5AbssASQYxNDEHtnm82</string>
+	<key>com.posthog.posthog.POSTHOG_HOST</key>
+	<string>https://app.posthog.com</string>
+	<key>com.posthog.posthog.TRACK_APPLICATION_LIFECYCLE_EVENTS</key>
+	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>DashTally needs access to your camera to scan paper receipts and capture expense records.</string>
+	<string>Ahl needs access to your camera to attach photos to transactions.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>DashTally needs access to your photo library to import receipt images for expense tracking.</string>
+	<string>Ahl needs access to your photo library to attach transaction attachments.</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

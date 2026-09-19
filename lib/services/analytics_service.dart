@@ -22,86 +22,36 @@ class AnalyticsService {
     }
   }
 
-  void scanAttemptStarted({required String source, required int attemptNumber}) {
-    capture('scan_attempt_started', properties: {
-      'source': source,
-      'attempt_number': attemptNumber,
-    });
-  }
-
-  void scanCompleted({
-    required bool success,
-    required int durationMs,
-    int fieldsFilled = 0,
-    bool isLowConfidence = false,
+  void transactionLogged({
+    required String type,
+    required double amount,
+    required String categoryId,
+    required String memberRole,
   }) {
-    capture('scan_completed', properties: {
-      'success': success,
-      'duration_ms': durationMs,
-      'fields_filled': fieldsFilled,
-      'is_low_confidence': isLowConfidence,
+    capture('transaction_logged', properties: {
+      'type': type,
+      'amount': amount,
+      'category_id': categoryId,
+      'member_role': memberRole,
     });
   }
 
-  void scanFailed({required String reason, required int attemptNumber}) {
-    capture('scan_failed', properties: {
-      'reason': reason,
-      'attempt_number': attemptNumber,
+  void onboardingCompleted({required String language, required String currencyCode}) {
+    capture('onboarding_completed', properties: {
+      'language': language,
+      'currency_code': currencyCode,
     });
   }
 
-  void receiptVerified({required int editedFieldsCount, required bool wasManual}) {
-    capture('receipt_verified', properties: {
-      'edited_fields_count': editedFieldsCount,
-      'was_manual': wasManual,
+  void appRated({required int rating}) {
+    capture('app_rated', properties: {
+      'rating': rating,
     });
   }
 
-  void receiptSaved({
-    required String category,
-    required bool isFirstReceipt,
-    double? amount,
-  }) {
-    capture('receipt_saved', properties: {
-      'category': category,
-      'is_first_receipt': isFirstReceipt,
-      'amount': amount ?? 0.0,
-    });
-  }
-
-  void paywallImpression({
-    required String trigger,
-    required int attemptsUsed,
-    required int savedReceiptCount,
-  }) {
+  void paywallImpression({required String trigger}) {
     capture('paywall_impression', properties: {
       'trigger': trigger,
-      'attempts_used': attemptsUsed,
-      'saved_receipt_count': savedReceiptCount,
-    });
-  }
-
-  void planSelected({required String planType}) {
-    capture('plan_selected', properties: {
-      'plan_type': planType,
-    });
-  }
-
-  void purchaseCompleted({required String planType}) {
-    capture('purchase_completed', properties: {
-      'plan_type': planType,
-    });
-  }
-
-  void csvExported({required int receiptCount}) {
-    capture('csv_exported', properties: {
-      'receipt_count': receiptCount,
-    });
-  }
-
-  void roleSelected({required String role}) {
-    capture('role_selected', properties: {
-      'role': role,
     });
   }
 }
