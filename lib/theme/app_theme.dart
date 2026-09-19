@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
 /// Ahl Design System & Color Palette
 /// Tailored for GCC joint household finance:
@@ -147,6 +148,25 @@ class AppTheme {
       color: color,
       letterSpacing: 0.2,
     );
+  }
+
+  /// Formats money dynamically for the active locale:
+  /// English: 'QAR 25,000.00'
+  /// Arabic: '25,000.00 ر.ق'
+  static String formatMoney(
+    double amount, {
+    String currencyCode = 'QAR',
+    String currencySymbol = 'ر.ق',
+    String lang = 'ar',
+    bool showDecimals = true,
+  }) {
+    final formatter = NumberFormat(showDecimals ? '#,##0.00' : '#,##0', 'en_US');
+    final formatted = formatter.format(amount);
+    if (lang == 'ar') {
+      return '$formatted $currencySymbol';
+    } else {
+      return '$currencyCode $formatted';
+    }
   }
 
   static ThemeData get theme => ThemeData(

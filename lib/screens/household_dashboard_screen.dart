@@ -9,8 +9,10 @@ import '../services/database_service.dart';
 import '../services/export_service.dart';
 import '../services/paywall_service.dart';
 import '../theme/app_theme.dart';
+import 'onboarding_screen.dart';
 import 'paywall_screen.dart';
 import 'quick_add_transaction_sheet.dart';
+import 'settings_screen.dart';
 
 class HouseholdDashboardScreen extends StatefulWidget {
   final VoidCallback? onToggleLanguage;
@@ -44,9 +46,9 @@ class _HouseholdDashboardScreenState extends State<HouseholdDashboardScreen> {
   }
 
   void _toggleLanguage() async {
-    final newLang = _household.preferredLanguage == 'ar' ? 'en' : 'ar';
-    final updated = _household.copyWith(preferredLanguage: newLang);
-    await _db.updateHousehold(updated);
+    final currentLang = _db.appLanguage;
+    final newLang = currentLang == 'ar' ? 'en' : 'ar';
+    await _db.setAppLanguage(newLang);
     _reloadHousehold();
     widget.onToggleLanguage?.call();
   }
@@ -141,8 +143,22 @@ class _HouseholdDashboardScreenState extends State<HouseholdDashboardScreen> {
   }
 
   String _formatCurrency(double amount) {
-    final formatter = NumberFormat('#,##0.00', 'en_US');
-    return '${formatter.format(amount)} ${_household.currencySymbol}';
+    return AppTheme.formatMoney(
+      amount,
+      currencyCode: _household.currencyCode,
+      currencySymbol: _household.currencySymbol,
+      lang: _household.preferredLanguage,
+    );
+  }
+
+  String _getHouseholdDisplayName(String lang) {
+    if (_household.name == 'عائلتنا' && lang == 'en') {
+      return 'Our Household';
+    }
+    if (_household.name == 'Our Household' && lang == 'ar') {
+      return 'عائلتنا';
+    }
+    return _household.name;
   }
 
   void _openQuickAdd() async {
@@ -157,6 +173,7 @@ class _HouseholdDashboardScreenState extends State<HouseholdDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _household = _db.getHousehold();
     final isArabic = _household.preferredLanguage == 'ar';
     final lang = _household.preferredLanguage;
     final textDirection = isArabic ? TextDirection.rtl : TextDirection.ltr;
@@ -185,26 +202,23 @@ class _HouseholdDashboardScreenState extends State<HouseholdDashboardScreen> {
                 ),
               ),
               const SizedBox(width: 8),
-              Text(
-                _household.name,
-                style: AppTheme.brandTitle(lang: lang),
+              Flexible(
+                child: Text(
+                  _getHouseholdDisplayName(lang),
+                  style: AppTheme.brandTitle(lang: lang),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),
           actions: [
-            // Export CSV Action
-            IconButton(
-              icon: const Icon(Icons.file_download_outlined, color: AppTheme.primaryTeal, size: 22),
-              tooltip: isArabic ? 'تصدير البيانات (إكسل / CSV)' : 'Export Data (CSV)',
-              onPressed: _exportTransactions,
-            ),
             // Pro Status / Upgrade Pill
             ValueListenableBuilder<bool>(
               valueListenable: _paywallService.isPro,
               builder: (context, isPro, _) {
                 if (isPro) {
                   return Container(
-                    margin: const EdgeInsetsDirectional.only(end: 8),
+                    margin: const EdgeInsetsDirectional.only(end: 4),
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: AppTheme.accentGoldLight,
@@ -230,9 +244,10 @@ class _HouseholdDashboardScreenState extends State<HouseholdDashboardScreen> {
                   );
                 }
                 return Padding(
-                  padding: const EdgeInsetsDirectional.only(end: 8),
+                  padding: const EdgeInsetsDirectional.only(end: 4),
                   child: ActionChip(
                     onPressed: () => PaywallScreen.show(context, trigger: 'dashboard_appbar'),
+                    visualDensity: VisualDensity.compact,
                     avatar: const Icon(Icons.workspace_premium_rounded, size: 14, color: AppTheme.accentGold),
                     label: Text(
                       isArabic ? 'أهل برو' : 'Get Pro',
@@ -251,19 +266,87 @@ class _HouseholdDashboardScreenState extends State<HouseholdDashboardScreen> {
               },
             ),
             // Instant Language Switcher Button
-            Padding(
-              padding: const EdgeInsetsDirectional.only(end: 12),
-              child: ActionChip(
-                onPressed: _toggleLanguage,
-                avatar: const Icon(Icons.language_rounded, size: 16, color: AppTheme.primaryTeal),
-                label: Text(
-                  isArabic ? 'English' : 'العربية',
-                  style: AppTheme.bodyMedium(fontSize: 12, color: AppTheme.primaryTeal, lang: lang),
-                ),
-                backgroundColor: AppTheme.primaryTealLight,
-                side: const BorderSide(color: AppTheme.primaryTealBorder),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ActionChip(
+              onPressed: _toggleLanguage,
+              visualDensity: VisualDensity.compact,
+              avatar: const Icon(Icons.language_rounded, size: 14, color: AppTheme.primaryTeal),
+              label: Text(
+                isArabic ? 'English' : 'العربية',
+                style: AppTheme.bodyMedium(fontSize: 11, color: AppTheme.primaryTeal, lang: lang),
               ),
+              backgroundColor: AppTheme.primaryTealLight,
+              side: const BorderSide(color: AppTheme.primaryTealBorder),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+            // Settings Button
+            IconButton(
+              icon: const Icon(Icons.settings_outlined, color: AppTheme.inkSecondary, size: 22),
+              tooltip: isArabic ? 'الإعدادات والملف' : 'Settings & Profile',
+              onPressed: () async {
+                await Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                );
+                _reloadHousehold();
+              },
+            ),
+            // Overflow Menu (Export & Diagnostic)
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert_rounded, color: AppTheme.inkSecondary, size: 22),
+              tooltip: isArabic ? 'خيارات إضافية' : 'More Options',
+              onSelected: (val) {
+                if (val == 'settings') {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                  ).then((_) => _reloadHousehold());
+                } else if (val == 'export') {
+                  _exportTransactions();
+                } else if (val == 'tour') {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+                  ).then((_) => _reloadHousehold());
+                }
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'settings',
+                  child: Row(
+                    children: [
+                      const Icon(Icons.settings_outlined, color: AppTheme.primaryTeal, size: 20),
+                      const SizedBox(width: 10),
+                      Text(
+                        isArabic ? 'الإعدادات والملف' : 'Settings & Profile',
+                        style: AppTheme.body(fontSize: 13, color: AppTheme.inkPrimary, lang: lang),
+                      ),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'export',
+                  child: Row(
+                    children: [
+                      const Icon(Icons.file_download_outlined, color: AppTheme.primaryTeal, size: 20),
+                      const SizedBox(width: 10),
+                      Text(
+                        isArabic ? 'تصدير البيانات (CSV / إكسل)' : 'Export CSV (Excel)',
+                        style: AppTheme.body(fontSize: 13, color: AppTheme.inkPrimary, lang: lang),
+                      ),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'tour',
+                  child: Row(
+                    children: [
+                      const Icon(Icons.assessment_outlined, color: AppTheme.accentGold, size: 20),
+                      const SizedBox(width: 10),
+                      Text(
+                        isArabic ? 'التقييم المالي الشامل' : 'Financial Assessment',
+                        style: AppTheme.body(fontSize: 13, color: AppTheme.inkPrimary, lang: lang),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -422,8 +505,13 @@ class _HouseholdDashboardScreenState extends State<HouseholdDashboardScreen> {
   // --- UI COMPONENTS ---
 
   Widget _buildMonthSelector(String lang, bool isCurrentMonth) {
-    final monthFormat = DateFormat('MMMM yyyy', lang == 'ar' ? 'ar' : 'en');
-    final monthLabel = monthFormat.format(_selectedMonth);
+    String monthLabel;
+    try {
+      final monthFormat = DateFormat('MMMM yyyy', lang == 'ar' ? 'ar' : 'en');
+      monthLabel = monthFormat.format(_selectedMonth);
+    } catch (_) {
+      monthLabel = '${_selectedMonth.year}-${_selectedMonth.month.toString().padLeft(2, '0')}';
+    }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -828,7 +916,13 @@ class _HouseholdDashboardScreenState extends State<HouseholdDashboardScreen> {
                   Row(
                     children: [
                       Text(
-                        DateFormat('d MMM', lang == 'ar' ? 'ar' : 'en').format(tx.date),
+                        () {
+                          try {
+                            return DateFormat('d MMM', lang == 'ar' ? 'ar' : 'en').format(tx.date);
+                          } catch (_) {
+                            return '${tx.date.day}/${tx.date.month}';
+                          }
+                        }(),
                         style: AppTheme.body(fontSize: 12, color: AppTheme.inkMuted, lang: lang),
                       ),
                       if (tx.note != null && tx.note!.isNotEmpty) ...[

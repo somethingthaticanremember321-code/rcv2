@@ -63,8 +63,12 @@ class _HouseholdSplitScreenState extends State<HouseholdSplitScreen> {
   }
 
   String _formatCurrency(double amount) {
-    final formatter = NumberFormat('#,##0.00', 'en_US');
-    return '${formatter.format(amount)} ${_household.currencySymbol}';
+    return AppTheme.formatMoney(
+      amount,
+      currencyCode: _household.currencyCode,
+      currencySymbol: _household.currencySymbol,
+      lang: _household.preferredLanguage,
+    );
   }
 
   String _getRoleLabel(String role, bool isArabic) {
@@ -271,8 +275,13 @@ class _HouseholdSplitScreenState extends State<HouseholdSplitScreen> {
   }
 
   Widget _buildMonthSelector(String lang, bool isCurrentMonth) {
-    final monthFormat = DateFormat('MMMM yyyy', lang == 'ar' ? 'ar' : 'en');
-    final monthLabel = monthFormat.format(_selectedMonth);
+    String monthLabel;
+    try {
+      final monthFormat = DateFormat('MMMM yyyy', lang == 'ar' ? 'ar' : 'en');
+      monthLabel = monthFormat.format(_selectedMonth);
+    } catch (_) {
+      monthLabel = '${_selectedMonth.year}-${_selectedMonth.month.toString().padLeft(2, '0')}';
+    }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

@@ -75,8 +75,12 @@ class _CategoryBudgetsScreenState extends State<CategoryBudgetsScreen> {
   }
 
   String _formatCurrency(double amount) {
-    final formatter = NumberFormat('#,##0.00', 'en_US');
-    return '${formatter.format(amount)} ${_household.currencySymbol}';
+    return AppTheme.formatMoney(
+      amount,
+      currencyCode: _household.currencyCode,
+      currencySymbol: _household.currencySymbol,
+      lang: _household.preferredLanguage,
+    );
   }
 
   void _openBudgetEditSheet(CategoryBudgetStatus status) async {
@@ -242,8 +246,13 @@ class _CategoryBudgetsScreenState extends State<CategoryBudgetsScreen> {
   }
 
   Widget _buildMonthSelector(String lang, bool isCurrentMonth) {
-    final monthFormat = DateFormat('MMMM yyyy', lang == 'ar' ? 'ar' : 'en');
-    final monthLabel = monthFormat.format(_selectedMonth);
+    String monthLabel;
+    try {
+      final monthFormat = DateFormat('MMMM yyyy', lang == 'ar' ? 'ar' : 'en');
+      monthLabel = monthFormat.format(_selectedMonth);
+    } catch (_) {
+      monthLabel = '${_selectedMonth.year}-${_selectedMonth.month.toString().padLeft(2, '0')}';
+    }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -741,7 +750,12 @@ class _CategoryBudgetEditSheetState extends State<CategoryBudgetEditSheet> {
   Widget build(BuildContext context) {
     final isArabic = widget.household.preferredLanguage == 'ar';
     final lang = widget.household.preferredLanguage;
-    final monthLabel = DateFormat('MMMM yyyy', isArabic ? 'ar' : 'en').format(widget.selectedMonth);
+    String monthLabel;
+    try {
+      monthLabel = DateFormat('MMMM yyyy', isArabic ? 'ar' : 'en').format(widget.selectedMonth);
+    } catch (_) {
+      monthLabel = '${widget.selectedMonth.year}-${widget.selectedMonth.month.toString().padLeft(2, '0')}';
+    }
 
     return Container(
       decoration: const BoxDecoration(
@@ -818,7 +832,7 @@ class _CategoryBudgetEditSheetState extends State<CategoryBudgetEditSheet> {
               child: Row(
                 children: [
                   Text(
-                    widget.household.currencySymbol,
+                    isArabic ? widget.household.currencySymbol : widget.household.currencyCode,
                     style: AppTheme.body(fontSize: 14, color: AppTheme.inkSecondary, lang: lang),
                   ),
                   const SizedBox(width: 8),
@@ -956,7 +970,7 @@ class _CategoryBudgetEditSheetState extends State<CategoryBudgetEditSheet> {
                       child: Row(
                         children: [
                           Text(
-                            widget.household.currencySymbol,
+                            isArabic ? widget.household.currencySymbol : widget.household.currencyCode,
                             style: AppTheme.amountMonospace(fontSize: 16, color: AppTheme.accentGold),
                           ),
                           const SizedBox(width: 10),

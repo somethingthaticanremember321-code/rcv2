@@ -55,13 +55,21 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     final isArabic = _household.preferredLanguage == 'ar';
     final textDirection = isArabic ? TextDirection.rtl : TextDirection.ltr;
 
+    final lang = _household.preferredLanguage;
     final List<Widget> screens = [
       HouseholdDashboardScreen(
+        key: ValueKey('dash_$lang'),
         onToggleLanguage: _reloadHousehold,
       ),
-      const CategoryBudgetsScreen(),
-      const HouseholdSplitScreen(),
-      const ZakatTrackerScreen(),
+      CategoryBudgetsScreen(
+        key: ValueKey('budgets_$lang'),
+      ),
+      HouseholdSplitScreen(
+        key: ValueKey('split_$lang'),
+      ),
+      ZakatTrackerScreen(
+        key: ValueKey('zakat_$lang'),
+      ),
     ];
 
     return Directionality(

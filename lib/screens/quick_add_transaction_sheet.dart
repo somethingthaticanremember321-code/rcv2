@@ -331,7 +331,7 @@ class _QuickAddTransactionSheetState extends State<QuickAddTransactionSheet> {
                     child: Row(
                       children: [
                         Text(
-                          widget.household.currencySymbol,
+                          isArabic ? widget.household.currencySymbol : widget.household.currencyCode,
                           style: AppTheme.amountMonospace(
                             fontSize: 22,
                             color: _selectedType == 'expense' ? AppTheme.terracotta : AppTheme.primaryTeal,

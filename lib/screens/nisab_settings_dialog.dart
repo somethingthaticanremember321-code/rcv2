@@ -70,7 +70,7 @@ class _NisabSettingsDialogState extends State<NisabSettingsDialog> {
   Widget build(BuildContext context) {
     final isArabic = widget.household.preferredLanguage == 'ar';
     final lang = widget.household.preferredLanguage;
-    final currency = widget.household.currencySymbol;
+    final currency = isArabic ? widget.household.currencySymbol : widget.household.currencyCode;
 
     return Directionality(
       textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,

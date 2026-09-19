@@ -130,7 +130,7 @@ class _ZakatPaymentSheetState extends State<ZakatPaymentSheet> {
   Widget build(BuildContext context) {
     final isArabic = widget.household.preferredLanguage == 'ar';
     final lang = widget.household.preferredLanguage;
-    final currency = widget.household.currencySymbol;
+    final currency = isArabic ? widget.household.currencySymbol : widget.household.currencyCode;
     final presets = isArabic ? _recipientPresetsAr : _recipientPresetsEn;
 
     return Container(

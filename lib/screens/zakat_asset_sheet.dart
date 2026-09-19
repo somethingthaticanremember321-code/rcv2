@@ -205,7 +205,7 @@ class _ZakatAssetSheetState extends State<ZakatAssetSheet> {
   Widget build(BuildContext context) {
     final isArabic = widget.household.preferredLanguage == 'ar';
     final lang = widget.household.preferredLanguage;
-    final currency = widget.household.currencySymbol;
+    final currency = isArabic ? widget.household.currencySymbol : widget.household.currencyCode;
     final isNew = widget.existingAsset == null;
     final valuation = _computeValuation();
     final liabilities = double.tryParse(_liabilitiesController.text.trim()) ?? 0.0;

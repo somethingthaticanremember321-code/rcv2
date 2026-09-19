@@ -46,8 +46,12 @@ class _ZakatTrackerScreenState extends State<ZakatTrackerScreen> {
   }
 
   String _formatCurrency(double amount) {
-    final formatter = NumberFormat('#,##0.00', 'en_US');
-    return '${formatter.format(amount)} ${_household.currencySymbol}';
+    return AppTheme.formatMoney(
+      amount,
+      currencyCode: _household.currencyCode,
+      currencySymbol: _household.currencySymbol,
+      lang: _household.preferredLanguage,
+    );
   }
 
   IconData _getAssetIcon(String type) {
@@ -810,7 +814,13 @@ class _ZakatTrackerScreenState extends State<ZakatTrackerScreen> {
                   Row(
                     children: [
                       Text(
-                        DateFormat('d MMM yyyy', isArabic ? 'ar' : 'en').format(payment.paymentDate),
+                        () {
+                          try {
+                            return DateFormat('d MMM yyyy', isArabic ? 'ar' : 'en').format(payment.paymentDate);
+                          } catch (_) {
+                            return '${payment.paymentDate.day}/${payment.paymentDate.month}/${payment.paymentDate.year}';
+                          }
+                        }(),
                         style: AppTheme.body(fontSize: 11, color: AppTheme.inkMuted, lang: lang),
                       ),
                       if (member != null) ...[
