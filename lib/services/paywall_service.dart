@@ -42,7 +42,7 @@ class PaywallService {
   static const String _appleApiKey = ApiConfig.revenueCatAppleApiKey;
   static const String _googleApiKey = ApiConfig.revenueCatGoogleApiKey;
 
-  static const bool _forceFreePro = bool.fromEnvironment('FREE_PRO', defaultValue: true);
+  static const bool _forceFreePro = bool.fromEnvironment('FREE_PRO', defaultValue: false);
   final ValueNotifier<bool> isPro = ValueNotifier(_forceFreePro);
 
   // Freemium Entitlement Gate Limits

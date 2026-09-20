@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy — Ahl (أهل)</title>
+  <meta name="description" content="Official Privacy Policy for Ahl — Sovereign Family Budgeting App. Details our Local-First, Zero-Cloud data architecture and compliance with Google Play and GCC Personal Data Protection Laws.">
+  <link rel="icon" type="image/png" href="icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Amiri:wght@700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-teal: #0F6E56;
+      --primary-teal-dark: #0A4E3D;
+      --primary-teal-light: #E8F5F1;
+      --accent-gold: #C9962C;
+      --cream-bg: #FBF9F5;
+      --surface-card: #FFFFFF;
+      --surface-border: #E8E5DD;
+      --surface-border-light: #F0ECE4;
+      --ink-primary: #1F2421;
+      --ink-secondary: #525C56;
+      --ink-muted: #849189;
+      --radius-lg: 16px;
+      --radius-md: 10px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--cream-bg);
+      color: var(--ink-primary);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container { max-width: 860px; margin: 0 auto; padding: 0 24px; }
+
+    header {
+      padding: 20px 0;
+      border-bottom: 1px solid var(--surface-border);
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-wrapper {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--primary-teal-dark);
+      font-weight: 800;
+      font-size: 20px;
+    }
+
+    .brand-img {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+    }
+
+    .nav-link {
+      text-decoration: none;
+      color: var(--primary-teal);
+      font-weight: 700;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-link:hover { text-decoration: underline; }
+
+    main {
+      padding: 50px 0 80px;
+    }
+
+    .doc-header {
+      margin-bottom: 40px;
+      border-bottom: 1px solid var(--surface-border);
+      padding-bottom: 30px;
+    }
+
+    .doc-badge {
+      display: inline-block;
+      background: var(--primary-teal-light);
+      color: var(--primary-teal-dark);
+      padding: 4px 12px;
+      border-radius: 50px;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    h1 {
+      font-size: 34px;
+      font-weight: 800;
+      color: var(--primary-teal-dark);
+      line-height: 1.25;
+      margin-bottom: 10px;
+      letter-spacing: -0.5px;
+    }
+
+    .meta-info {
+      font-size: 14px;
+      color: var(--ink-muted);
+    }
+
+    .doc-content section {
+      background: var(--surface-card);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-lg);
+      padding: 32px 28px;
+      margin-bottom: 24px;
+    }
+
+    h2 {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--primary-teal-dark);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    p {
+      color: var(--ink-secondary);
+      font-size: 15px;
+      margin-bottom: 14px;
+    }
+
+    p:last-child { margin-bottom: 0; }
+
+    ul {
+      list-style-type: none;
+      margin: 14px 0;
+      padding-left: 0;
+    }
+
+    ul li {
+      position: relative;
+      padding-left: 24px;
+      color: var(--ink-secondary);
+      font-size: 15px;
+      margin-bottom: 10px;
+      line-height: 1.6;
+    }
+
+    ul li::before {
+      content: "•";
+      position: absolute;
+      left: 8px;
+      color: var(--primary-teal);
+      font-weight: 900;
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    .alert-box {
+      background: var(--primary-teal-light);
+      border-left: 4px solid var(--primary-teal);
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      padding: 16px 20px;
+      margin: 18px 0;
+      font-size: 14px;
+      color: var(--primary-teal-dark);
+      font-weight: 500;
+    }
+
+    footer {
+      border-top: 1px solid var(--surface-border);
+      padding: 40px 0;
+      background: #FFFFFF;
+      text-align: center;
+      font-size: 13px;
+      color: var(--ink-muted);
+    }
+
+    footer a {
+      color: var(--primary-teal);
+      text-decoration: none;
+      font-weight: 600;
+      margin: 0 10px;
+    }
+
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="container header-wrapper">
+      <a href="index.html" class="brand">
+        <img src="icon.png" alt="Ahl Logo" class="brand-img">
+        <span>Ahl (أهل)</span>
+      </a>
+      <a href="index.html" class="nav-link">← Back to Main Website</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="doc-header">
+      <span class="doc-badge">Privacy & Security Commitment</span>
+      <h1>Privacy Policy</h1>
+      <p class="meta-info">Last Updated: September 20, 2026 • Compliant with Google Play & GCC PDPL</p>
+    </div>
+
+    <div class="doc-content">
+      
+      <!-- Section 1 -->
+      <section>
+        <h2>1. Fundamental Privacy Principle: Local-First & Zero-Cloud</h2>
+        <p>
+          At <strong>Ahl (أهل)</strong> ("the Application", "we", "us"), we believe that your family's financial life, income, and expenditures are sovereign and intimate personal matters.
+        </p>
+        <div class="alert-box">
+          <strong>Our Core Guarantee:</strong> The Application operates strictly on a <strong>Local-First, Zero-Cloud architecture</strong>. We do NOT operate remote database servers that store your financial transactions, salaries, contributor names, or budget balances.
+        </div>
+        <p>
+          Everything you record inside the Application remains stored exclusively in encrypted SQLite storage on your physical device.
+        </p>
+      </section>
+
+      <!-- Section 2 -->
+      <section>
+        <h2>2. Information We Do NOT Collect</h2>
+        <p>To ensure complete transparency, we explicitly declare that Ahl does <strong>NOT</strong> collect, request, transmit, or monetize:</p>
+        <ul>
+          <li><strong>No Bank Credentials:</strong> We never ask for online banking logins, passwords, OTP tokens, or debit/credit card numbers.</li>
+          <li><strong>No Financial Transaction Telemetry:</strong> We cannot see your income figures, contributor names, recurring expenses, or Zakat amounts.</li>
+          <li><strong>No Identity or Contact Harvesting:</strong> We do not ask for or collect your national ID, phone contacts, email address, or GPS location.</li>
+          <li><strong>No Data Brokering:</strong> We never sell, rent, license, or disclose your financial information to marketing networks or third parties.</li>
+        </ul>
+      </section>
+
+      <!-- Section 3 -->
+      <section>
+        <h2>3. Data Stored Locally on Your Device</h2>
+        <p>The following data is created and saved strictly within your smartphone's private app sandbox:</p>
+        <ul>
+          <li><strong>Household Contributors:</strong> Names (e.g. Self, Spouse) and allocated monthly incomes used for automatic inflow calculations.</li>
+          <li><strong>Subscriptions & Categories:</strong> Services you select from our catalog or custom subscriptions you add (renewal frequency, cost, tags).</li>
+          <li><strong>Seasonal Budgets & Expenses:</strong> Allocations for Ramadan, Eid, education, and daily expenses.</li>
+          <li><strong>Zakat Benchmarks:</strong> Your recorded cash/gold assets and short-term obligations for Nisab checks.</li>
+        </ul>
+      </section>
+
+      <!-- Section 4 -->
+      <section>
+        <h2>4. Third-Party Service Providers (Google Play)</h2>
+        <p>
+          The Application utilizes trusted platform services strictly to facilitate app delivery and optional subscriptions:
+        </p>
+        <ul>
+          <li><strong>Google Play In-App Billing:</strong> Processes Pro subscriptions and one-time payments. Google handles payment card data securely in accordance with the Google Payments Privacy Notice. We never receive or store your card or bank account details.</li>
+          <li><strong>Anonymized App Stability (Crash Reporting):</strong> To diagnose unexpected crashes across various Android devices, anonymized non-personal crash logs (device model, Android OS version, stack trace) may be collected. These traces never include user financial records or personal identities.</li>
+        </ul>
+      </section>
+
+      <!-- Section 5 -->
+      <section id="gcc">
+        <h2>5. Compliance with GCC Personal Data Protection Laws (PDPL)</h2>
+        <p>
+          Ahl is developed with strict adherence to regional privacy mandates, including:
+        </p>
+        <ul>
+          <li><strong>Saudi Arabia:</strong> Personal Data Protection Law (PDPL, Royal Decree M/19).</li>
+          <li><strong>United Arab Emirates:</strong> Federal Decree-Law No. 45 of 2021 regarding Personal Data Protection.</li>
+          <li><strong>Qatar:</strong> Law No. 13 of 2016 concerning Personal Data Privacy Protection.</li>
+        </ul>
+        <p>
+          Because all personal and financial data resides locally on the user's phone, users maintain complete sovereign data autonomy and retention control at all times.
+        </p>
+      </section>
+
+      <!-- Section 6 -->
+      <section>
+        <h2>6. Data Portability, Deletion, and Backups</h2>
+        <p>You have unconditional control over your data:</p>
+        <ul>
+          <li><strong>Export:</strong> You can export your full transaction records to standard CSV or Excel files at any time.</li>
+          <li><strong>Local Backup & Restore:</strong> You can create an encrypted local backup file and save it to your personal storage or transfer it to a new phone.</li>
+          <li><strong>Total Erasure:</strong> Deleting the Application or tapping "Clear All Data" in Settings permanently erases all local database records from your device immediately.</li>
+        </ul>
+      </section>
+
+      <!-- Section 7 -->
+      <section>
+        <h2>7. Children's Privacy</h2>
+        <p>
+          Ahl is a family financial organization tool intended for adult household heads and decision makers. We do not knowingly collect personal information from children under the age of 13.
+        </p>
+      </section>
+
+      <!-- Section 8 -->
+      <section>
+        <h2>8. Contact & Privacy Inquiries</h2>
+        <p>
+          If you have questions or feedback regarding our privacy practices or data handling, please contact our privacy desk:
+        </p>
+        <p>
+          <strong>Email:</strong> <a href="mailto:privacy@lockinapp.com" style="color:var(--primary-teal); font-weight:700;">privacy@lockinapp.com</a><br>
+          <strong>App Package:</strong> <code>com.zyad.lockin</code><br>
+          <strong>Developer Support:</strong> <a href="mailto:support@lockinapp.com" style="color:var(--primary-teal); font-weight:700;">support@lockinapp.com</a>
+        </p>
+      </section>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p style="margin-bottom: 12px;">
+        <a href="index.html">Home</a> • 
+        <a href="privacy.html">Privacy Policy</a> • 
+        <a href="terms.html">Terms of Service</a> • 
+        <a href="https://play.google.com/store/apps/details?id=com.zyad.lockin" target="_blank" rel="noopener noreferrer">Google Play</a>
+      </p>
+      <p>© 2026 Ahl App (أهل). All rights reserved.</p>
+    </div>
+  </footer>
+
+</body>
+</html>

@@ -358,6 +358,7 @@ class DatabaseService {
     required double secondaryMonthlyIncome,
     required Map<String, double> fixedCommitments,
     required List<Map<String, dynamic>> selectedSubscriptions,
+    List<Map<String, dynamic>>? contributorsData,
   }) async {
     // Mark onboarding complete first so any reactive MaterialApp rebuilds navigate to home
     await setHasSeenOnboarding(true);
@@ -374,56 +375,91 @@ class DatabaseService {
     await setAppLanguage(language);
     await updateHousehold(updatedHousehold);
 
-    // 2. Update Members
-    final members = getMembers();
-    if (members.isNotEmpty) {
-      final primary = members.firstWhere((m) => m.isPrimary, orElse: () => members.first);
-      await updateMember(primary.copyWith(name: primaryMemberName));
+    final now = DateTime.now();
+    final categories = getCategories();
+    final catId = categories.isNotEmpty ? categories.first.id : _uuid.v4();
 
-      if (secondaryMemberName != null && secondaryMemberName.trim().isNotEmpty) {
-        final nonPrimary = members.where((m) => !m.isPrimary).toList();
-        if (nonPrimary.isNotEmpty) {
-          await updateMember(nonPrimary.first.copyWith(name: secondaryMemberName.trim()));
+    // 2. Update Members & Incomes via dynamic contributors if provided
+    if (contributorsData != null && contributorsData.isNotEmpty) {
+      final existingMembers = getMembers();
+
+      for (int i = 0; i < contributorsData.length; i++) {
+        final c = contributorsData[i];
+        final name = (c['name'] as String).trim();
+        final role = (c['role'] as String?) ?? (i == 0 ? 'self' : 'contributor');
+        final colorHex = (c['colorHex'] as String?) ?? (i == 0 ? '#0F6E56' : '#C9962C');
+        final isPrimary = (c['isPrimary'] as bool?) ?? (i == 0);
+        final income = (c['income'] as num?)?.toDouble() ?? 0.0;
+
+        Member m;
+        if (i < existingMembers.length) {
+          m = existingMembers[i].copyWith(
+            name: name,
+            role: role,
+            colorHex: colorHex,
+            isPrimary: isPrimary,
+          );
+          await updateMember(m);
+        } else {
+          m = Member(
+            id: _uuid.v4(),
+            householdId: h.id,
+            name: name,
+            role: role,
+            colorHex: colorHex,
+            isPrimary: isPrimary,
+            createdAt: now,
+          );
+          await addMember(m);
+        }
+
+        // Log recurring monthly income transaction for each contributor
+        if (income > 0) {
+          await addTransaction(Transaction(
+            id: _uuid.v4(),
+            householdId: h.id,
+            memberId: m.id,
+            categoryId: catId,
+            amount: income,
+            type: 'income',
+            note: language == 'ar' ? 'الراتب / الدخل الشهري ($name)' : 'Monthly Salary ($name)',
+            date: now,
+            createdAt: now,
+            updatedAt: now,
+          ));
         }
       }
-    }
 
-    // 3. Update Category Budgets based on real fixed commitments
-    final categories = getCategories();
-    for (final cat in categories) {
-      if (fixedCommitments.containsKey('housing') &&
-          (cat.iconName == 'home' || cat.nameEn.toLowerCase().contains('housing'))) {
-        await updateCategory(cat.copyWith(baselineMonthlyBudget: fixedCommitments['housing']!));
-      } else if (fixedCommitments.containsKey('utilities') &&
-          (cat.iconName == 'bolt' || cat.nameEn.toLowerCase().contains('utilities'))) {
-        await updateCategory(cat.copyWith(baselineMonthlyBudget: fixedCommitments['utilities']!));
-      } else if (fixedCommitments.containsKey('groceries') &&
-          (cat.iconName == 'shopping_cart' || cat.nameEn.toLowerCase().contains('groceries'))) {
-        await updateCategory(cat.copyWith(baselineMonthlyBudget: fixedCommitments['groceries']!));
-      } else if (fixedCommitments.containsKey('school') &&
-          (cat.iconName == 'school' || cat.nameEn.toLowerCase().contains('education'))) {
-        await updateCategory(cat.copyWith(baselineMonthlyBudget: fixedCommitments['school']!));
-      } else if (fixedCommitments.containsKey('domestic_help') &&
-          (cat.iconName == 'cleaning_services' || cat.nameEn.toLowerCase().contains('domestic'))) {
-        await updateCategory(cat.copyWith(baselineMonthlyBudget: fixedCommitments['domestic_help']!));
+      // Clean up excess non-primary members if contributor count reduced
+      if (existingMembers.length > contributorsData.length) {
+        for (int i = contributorsData.length; i < existingMembers.length; i++) {
+          if (!existingMembers[i].isPrimary) {
+            await deleteMember(existingMembers[i].id);
+          }
+        }
       }
-    }
+    } else {
+      // Legacy fallback
+      final members = getMembers();
+      if (members.isNotEmpty) {
+        final primary = members.firstWhere((m) => m.isPrimary, orElse: () => members.first);
+        await updateMember(primary.copyWith(name: primaryMemberName));
 
-    // 4. Log initial Monthly Inflows if income was entered
-    final now = DateTime.now();
-    final primaryMember = getMembers().firstWhere((m) => m.isPrimary, orElse: () => getMembers().first);
+        if (secondaryMemberName != null && secondaryMemberName.trim().isNotEmpty) {
+          final nonPrimary = members.where((m) => !m.isPrimary).toList();
+          if (nonPrimary.isNotEmpty) {
+            await updateMember(nonPrimary.first.copyWith(name: secondaryMemberName.trim()));
+          }
+        }
+      }
 
-    final existingIncomes = getTransactions()
-        .where((t) => t.isIncome && t.date.year == now.year && t.date.month == now.month)
-        .toList();
-
-    if (existingIncomes.isEmpty) {
       if (primaryMonthlyIncome > 0) {
+        final primaryMember = getMembers().firstWhere((m) => m.isPrimary, orElse: () => getMembers().first);
         await addTransaction(Transaction(
           id: _uuid.v4(),
           householdId: h.id,
           memberId: primaryMember.id,
-          categoryId: categories.first.id,
+          categoryId: catId,
           amount: primaryMonthlyIncome,
           type: 'income',
           note: language == 'ar' ? 'الراتب / الدخل الأساسي' : 'Primary Monthly Income',
@@ -433,12 +469,12 @@ class DatabaseService {
         ));
       }
       if (secondaryMonthlyIncome > 0) {
-        final secondaryMember = getMembers().firstWhere((m) => !m.isPrimary, orElse: () => primaryMember);
+        final secondaryMember = getMembers().firstWhere((m) => !m.isPrimary, orElse: () => getMembers().first);
         await addTransaction(Transaction(
           id: _uuid.v4(),
           householdId: h.id,
           memberId: secondaryMember.id,
-          categoryId: categories.first.id,
+          categoryId: catId,
           amount: secondaryMonthlyIncome,
           type: 'income',
           note: language == 'ar' ? 'الدخل الإضافي / مساهمة الشريك' : 'Secondary Income / Partner Contribution',

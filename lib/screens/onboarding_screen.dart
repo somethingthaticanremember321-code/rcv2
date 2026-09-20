@@ -12,6 +12,31 @@ class OnboardingScreen extends StatefulWidget {
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
+class OnboardingContributorEntry {
+  final String id;
+  final TextEditingController nameController;
+  final TextEditingController incomeController;
+  String role;
+  Color color;
+  IconData icon;
+  bool isPrimary;
+
+  OnboardingContributorEntry({
+    required this.id,
+    required this.nameController,
+    required this.incomeController,
+    this.role = 'contributor',
+    this.color = AppTheme.primaryTeal,
+    this.icon = Icons.person_rounded,
+    this.isPrimary = false,
+  });
+
+  void dispose() {
+    nameController.dispose();
+    incomeController.dispose();
+  }
+}
+
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final DatabaseService _db = DatabaseService();
   final PageController _pageController = PageController();
@@ -25,11 +50,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   String _selectedCurrencySymbol = 'ر.ق';
   final TextEditingController _householdNameController = TextEditingController();
 
-  // STEP 2: Inflows (Income) & Contributors
-  final TextEditingController _primaryIncomeController = TextEditingController();
-  final TextEditingController _secondaryIncomeController = TextEditingController();
-  final TextEditingController _primaryMemberController = TextEditingController();
-  final TextEditingController _secondaryMemberController = TextEditingController();
+  // STEP 2: Inflows (Income) & Dynamic Contributors
+  final List<OnboardingContributorEntry> _contributors = [];
 
   // STEP 3: Fixed Commitments
   final TextEditingController _housingController = TextEditingController();
@@ -132,11 +154,29 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       _householdNameController.text = _selectedLang == 'ar' ? 'عائلتنا' : 'Our Household';
     }
 
-    _primaryMemberController.text = _selectedLang == 'ar' ? 'أنا' : 'Self';
-    _secondaryMemberController.text = _selectedLang == 'ar' ? 'الزوج / الزوجة' : 'Spouse';
+    // Initialize dynamic household contributors
+    _contributors.addAll([
+      OnboardingContributorEntry(
+        id: 'self',
+        nameController: TextEditingController(text: _selectedLang == 'ar' ? 'أنا' : 'Self'),
+        incomeController: TextEditingController(text: '20000'),
+        role: 'self',
+        color: AppTheme.primaryTeal,
+        icon: Icons.person_rounded,
+        isPrimary: true,
+      ),
+      OnboardingContributorEntry(
+        id: 'spouse',
+        nameController: TextEditingController(text: _selectedLang == 'ar' ? 'الزوج / الزوجة' : 'Spouse'),
+        incomeController: TextEditingController(text: '0'),
+        role: 'spouse',
+        color: AppTheme.accentGold,
+        icon: Icons.favorite_rounded,
+        isPrimary: false,
+      ),
+    ]);
 
     // Reasonable defaults for quick frictionless entry
-    _primaryIncomeController.text = '20000';
     _housingController.text = '6000';
     _utilitiesController.text = '1000';
     _groceriesController.text = '3500';
@@ -148,10 +188,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   void dispose() {
     _pageController.dispose();
     _householdNameController.dispose();
-    _primaryIncomeController.dispose();
-    _secondaryIncomeController.dispose();
-    _primaryMemberController.dispose();
-    _secondaryMemberController.dispose();
+    for (final c in _contributors) {
+      c.dispose();
+    }
     _housingController.dispose();
     _utilitiesController.dispose();
     _groceriesController.dispose();
@@ -169,24 +208,71 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         if (_householdNameController.text == 'عائلتنا') {
           _householdNameController.text = 'Our Household';
         }
-        if (_primaryMemberController.text == 'أنا') {
-          _primaryMemberController.text = 'Self';
+        if (_contributors.isNotEmpty && _contributors[0].nameController.text == 'أنا') {
+          _contributors[0].nameController.text = 'Self';
         }
-        if (_secondaryMemberController.text == 'الزوج / الزوجة') {
-          _secondaryMemberController.text = 'Spouse';
+        if (_contributors.length > 1 && _contributors[1].nameController.text == 'الزوج / الزوجة') {
+          _contributors[1].nameController.text = 'Spouse';
         }
       } else {
         if (_householdNameController.text == 'Our Household') {
           _householdNameController.text = 'عائلتنا';
         }
-        if (_primaryMemberController.text == 'Self') {
-          _primaryMemberController.text = 'أنا';
+        if (_contributors.isNotEmpty && _contributors[0].nameController.text == 'Self') {
+          _contributors[0].nameController.text = 'أنا';
         }
-        if (_secondaryMemberController.text == 'Spouse') {
-          _secondaryMemberController.text = 'الزوج / الزوجة';
+        if (_contributors.length > 1 && _contributors[1].nameController.text == 'Spouse') {
+          _contributors[1].nameController.text = 'الزوج / الزوجة';
         }
       }
     });
+  }
+
+  void _addContributor() {
+    final idx = _contributors.length + 1;
+    const colors = [
+      Color(0xFF2E7D32), // Forest Green
+      Color(0xFF1565C0), // Royal Blue
+      Color(0xFF6A1B9A), // Purple
+      Color(0xFFD84315), // Deep Orange
+      Color(0xFF00838F), // Cyan Dark
+    ];
+    const icons = [
+      Icons.person_outline_rounded,
+      Icons.school_rounded,
+      Icons.work_outline_rounded,
+      Icons.family_restroom_rounded,
+      Icons.account_circle_outlined,
+    ];
+
+    final colorIndex = (_contributors.length - 2).clamp(0, colors.length - 1);
+    final chosenColor = colors[colorIndex];
+    final chosenIcon = icons[colorIndex];
+
+    setState(() {
+      _contributors.add(
+        OnboardingContributorEntry(
+          id: 'member_${DateTime.now().millisecondsSinceEpoch}',
+          nameController: TextEditingController(
+            text: _selectedLang == 'ar' ? 'فرد مساهم $idx' : 'Contributor $idx',
+          ),
+          incomeController: TextEditingController(text: '0'),
+          role: 'contributor',
+          color: chosenColor,
+          icon: chosenIcon,
+          isPrimary: false,
+        ),
+      );
+    });
+  }
+
+  void _removeContributor(int index) {
+    if (index >= 0 && index < _contributors.length && !_contributors[index].isPrimary) {
+      setState(() {
+        final removed = _contributors.removeAt(index);
+        removed.dispose();
+      });
+    }
   }
 
   double _parseVal(TextEditingController c) {
@@ -194,7 +280,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return double.tryParse(clean) ?? 0.0;
   }
 
-  double get _totalInflows => _parseVal(_primaryIncomeController) + _parseVal(_secondaryIncomeController);
+  double get _totalInflows => _contributors.fold(0.0, (sum, c) => sum + _parseVal(c.incomeController));
 
   double get _totalFixedCommitments {
     return _parseVal(_housingController) +
@@ -251,6 +337,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
     final selectedSubs = _subscriptions.where((s) => s.isSelected).map((s) => s.toMap()).toList();
 
+    final contributorsData = _contributors.map((c) {
+      final name = c.nameController.text.trim();
+      return {
+        'name': name.isEmpty
+            ? (c.isPrimary ? (_selectedLang == 'ar' ? 'أنا' : 'Self') : (_selectedLang == 'ar' ? 'مساهم' : 'Contributor'))
+            : name,
+        'role': c.role,
+        'income': _parseVal(c.incomeController),
+        'colorHex': '#${c.color.toARGB32().toRadixString(16).padLeft(8, '0').substring(2)}',
+        'isPrimary': c.isPrimary,
+      };
+    }).toList();
+
     await _db.applyOnboardingFinancialAssessment(
       language: _selectedLang,
       currencyCode: _selectedCurrencyCode,
@@ -258,14 +357,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       householdName: _householdNameController.text.trim().isEmpty
           ? (_selectedLang == 'ar' ? 'عائلتنا' : 'Our Household')
           : _householdNameController.text.trim(),
-      primaryMemberName: _primaryMemberController.text.trim().isEmpty
-          ? (_selectedLang == 'ar' ? 'أنا' : 'Self')
-          : _primaryMemberController.text.trim(),
-      secondaryMemberName: _secondaryMemberController.text.trim().isEmpty ? null : _secondaryMemberController.text.trim(),
-      primaryMonthlyIncome: _parseVal(_primaryIncomeController),
-      secondaryMonthlyIncome: _parseVal(_secondaryIncomeController),
+      primaryMemberName: contributorsData.first['name'] as String,
+      secondaryMemberName: contributorsData.length > 1 ? (contributorsData[1]['name'] as String) : null,
+      primaryMonthlyIncome: contributorsData.first['income'] as double,
+      secondaryMonthlyIncome: contributorsData.length > 1 ? (contributorsData[1]['income'] as double) : 0.0,
       fixedCommitments: fixedMap,
       selectedSubscriptions: selectedSubs,
+      contributorsData: contributorsData,
     );
 
     if (!mounted) return;
@@ -626,102 +724,231 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         children: [
           const SizedBox(height: 8),
           Text(
-            isArabic ? 'إجمالي الدخل والتدفقات الشهرية' : 'Monthly Household Inflows',
+            isArabic ? 'المساهمون والدخل الشهري' : 'Household Contributors & Inflows',
             style: AppTheme.editorialHeading(fontSize: 22, lang: _selectedLang),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 6),
           Text(
             isArabic
-                ? 'أدخل الرواتب والتدفقات المتوقعة لأسرتكم لتحديد السقف المالي بدقة.'
-                : 'Enter your monthly earnings to map your family budget ceiling.',
+                ? 'أضف أفراد الأسرة المساهمين ورواتبهم الشهرية، وسيقوم التطبيق بحساب إجمالي دخل البيت تلقائياً.'
+                : 'Add each contributing member and their salary. The app sums your family budget ceiling automatically.',
             style: AppTheme.body(fontSize: 13, color: AppTheme.inkSecondary, lang: _selectedLang),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 20),
 
-          // Primary Income
-          _buildAmountField(
-            controller: _primaryIncomeController,
-            label: isArabic ? 'الراتب / الدخل الأساسي الشهري' : 'Primary Monthly Salary',
-            hint: '20,000',
-            currency: currency,
-            icon: Icons.payments_outlined,
-            isArabic: isArabic,
-          ),
+          // Dynamic List of Contributors
+          ..._contributors.asMap().entries.map((entry) {
+            final index = entry.key;
+            final contributor = entry.value;
+            return _buildContributorCard(contributor, index, currency, isArabic);
+          }),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 4),
 
-          // Secondary Income
-          _buildAmountField(
-            controller: _secondaryIncomeController,
-            label: isArabic ? 'دخل إضافي / راتب الشريك (اختياري)' : 'Secondary Income / Partner (Optional)',
-            hint: '0',
-            currency: currency,
-            icon: Icons.account_balance_wallet_outlined,
-            isArabic: isArabic,
+          // Add Contributor Button
+          OutlinedButton.icon(
+            onPressed: _addContributor,
+            icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
+            label: Text(
+              isArabic ? 'إضافة مساهم مالي آخر للأسرة' : '+ Add Another Contributor',
+              style: AppTheme.body(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.primaryTeal,
+                lang: _selectedLang,
+              ),
+            ),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppTheme.primaryTeal,
+              side: const BorderSide(color: AppTheme.primaryTealBorder, width: 1.2),
+              padding: const EdgeInsets.symmetric(vertical: 13),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              backgroundColor: AppTheme.primaryTealLight.withValues(alpha: 0.3),
+            ),
           ),
 
           const SizedBox(height: 20),
 
-          // Contributor Names
-          Text(
-            isArabic ? 'أطراف المشاركة المالية' : 'Household Contributors',
-            style: AppTheme.label(fontSize: 12, color: AppTheme.inkSecondary, lang: _selectedLang),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: _buildNameField(
-                  controller: _primaryMemberController,
-                  hint: isArabic ? 'أنا' : 'Self',
-                  color: AppTheme.primaryTeal,
-                  icon: Icons.person,
-                  isArabic: isArabic,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _buildNameField(
-                  controller: _secondaryMemberController,
-                  hint: isArabic ? 'الزوج / الزوجة' : 'Spouse',
-                  color: AppTheme.accentGold,
-                  icon: Icons.favorite,
-                  isArabic: isArabic,
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 20),
-
-          // Total Inflows Card
+          // Total Inflows Card (Auto-summed, zero mental math)
           Container(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: AppTheme.primaryTealLight,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: AppTheme.primaryTealBorder),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Column(
               children: [
-                Text(
-                  isArabic ? 'إجمالي الدخل الشهري:' : 'Total Monthly Inflow:',
-                  style: AppTheme.body(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.primaryTeal, lang: _selectedLang),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      isArabic ? 'إجمالي دخل الأسرة الشهري:' : 'Total Household Inflow:',
+                      style: AppTheme.body(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.primaryTealDark,
+                        lang: _selectedLang,
+                      ),
+                    ),
+                    Text(
+                      AppTheme.formatMoney(
+                        _totalInflows,
+                        currencyCode: _selectedCurrencyCode,
+                        currencySymbol: _selectedCurrencySymbol,
+                        lang: _selectedLang,
+                      ),
+                      style: AppTheme.amountMonospace(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.primaryTealDark,
+                      ),
+                    ),
+                  ],
                 ),
-                Text(
-                  AppTheme.formatMoney(
-                    _totalInflows,
-                    currencyCode: _selectedCurrencyCode,
-                    currencySymbol: _selectedCurrencySymbol,
-                    lang: _selectedLang,
+                const SizedBox(height: 6),
+                Align(
+                  alignment: isArabic ? Alignment.centerRight : Alignment.centerLeft,
+                  child: Text(
+                    isArabic
+                        ? '⚡ محسوب تلقائياً من رواتب ${_contributors.length} أفراد مساهمين دون الحاجة لأي جمع ذهني.'
+                        : '⚡ Auto-summed from ${_contributors.length} contributor(s) — zero mental math needed.',
+                    style: AppTheme.body(fontSize: 11, color: AppTheme.primaryTeal, lang: _selectedLang),
                   ),
-                  style: AppTheme.amountMonospace(fontSize: 15, fontWeight: FontWeight.bold, color: AppTheme.primaryTealDark),
                 ),
               ],
             ),
+          ),
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContributorCard(
+    OnboardingContributorEntry contributor,
+    int index,
+    String currency,
+    bool isArabic,
+  ) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceCard,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: contributor.isPrimary ? AppTheme.primaryTealBorder : AppTheme.surfaceBorder,
+          width: contributor.isPrimary ? 1.5 : 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Header: Avatar, Name Field, Delete button
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 16,
+                backgroundColor: contributor.color.withValues(alpha: 0.15),
+                child: Icon(contributor.icon, size: 18, color: contributor.color),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: TextField(
+                  controller: contributor.nameController,
+                  style: AppTheme.body(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.inkPrimary,
+                    lang: _selectedLang,
+                  ),
+                  decoration: InputDecoration(
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 4),
+                    border: InputBorder.none,
+                    hintText: isArabic ? 'اسم المساهم' : 'Contributor Name',
+                    hintStyle: AppTheme.body(fontSize: 14, color: AppTheme.inkMuted, lang: _selectedLang),
+                  ),
+                ),
+              ),
+              if (contributor.isPrimary)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryTealLight,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    isArabic ? 'الرئيسي' : 'Primary',
+                    style: AppTheme.label(fontSize: 10, color: AppTheme.primaryTeal, lang: _selectedLang),
+                  ),
+                )
+              else
+                IconButton(
+                  icon: const Icon(Icons.close_rounded, size: 18, color: AppTheme.inkMuted),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  onPressed: () => _removeContributor(index),
+                  tooltip: isArabic ? 'حذف المساهم' : 'Remove Contributor',
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          const Divider(height: 1, color: AppTheme.surfaceBorder),
+          const SizedBox(height: 10),
+
+          // Monthly Salary Input
+          Row(
+            children: [
+              Text(
+                isArabic ? 'الراتب / الدخل:' : 'Monthly Salary:',
+                style: AppTheme.label(fontSize: 12, color: AppTheme.inkSecondary, lang: _selectedLang),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Container(
+                  height: 44,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: AppTheme.creamBg,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: AppTheme.surfaceBorder),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.payments_outlined, size: 16, color: contributor.color),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: TextField(
+                          controller: contributor.incomeController,
+                          keyboardType: TextInputType.number,
+                          onChanged: (_) => setState(() {}),
+                          style: AppTheme.amountMonospace(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.inkPrimary,
+                          ),
+                          decoration: InputDecoration(
+                            isDense: true,
+                            contentPadding: EdgeInsets.zero,
+                            border: InputBorder.none,
+                            hintText: '0',
+                            hintStyle: AppTheme.amountMonospace(fontSize: 15, color: AppTheme.inkMuted),
+                          ),
+                        ),
+                      ),
+                      Text(
+                        currency,
+                        style: AppTheme.label(fontSize: 11, color: AppTheme.inkMuted, lang: _selectedLang),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -1553,45 +1780,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildNameField({
-    required TextEditingController controller,
-    required String hint,
-    required Color color,
-    required IconData icon,
-    required bool isArabic,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceCard,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppTheme.surfaceBorder),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 12,
-            backgroundColor: color,
-            child: Icon(icon, size: 14, color: Colors.white),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: TextField(
-              controller: controller,
-              style: AppTheme.body(fontSize: 13, fontWeight: FontWeight.bold, lang: _selectedLang),
-              decoration: InputDecoration(
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
-                border: InputBorder.none,
-                hintText: hint,
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
