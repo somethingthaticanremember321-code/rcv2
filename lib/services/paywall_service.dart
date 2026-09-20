@@ -42,8 +42,7 @@ class PaywallService {
   static const String _appleApiKey = ApiConfig.revenueCatAppleApiKey;
   static const String _googleApiKey = ApiConfig.revenueCatGoogleApiKey;
 
-  static const bool _forceFreePro = bool.fromEnvironment('FREE_PRO', defaultValue: false);
-  final ValueNotifier<bool> isPro = ValueNotifier(_forceFreePro);
+  final ValueNotifier<bool> isPro = ValueNotifier(false);
 
   // Freemium Entitlement Gate Limits
   static const int freeMemberLimit = 2;
@@ -67,18 +66,18 @@ class PaywallService {
 
   /// Direct override for unit and integration testing
   void setProForTesting(bool value) {
-    isPro.value = value;
+    if (kDebugMode) {
+      isPro.value = value;
+    }
   }
 
   void togglePro() {
-    isPro.value = !isPro.value;
+    if (kDebugMode) {
+      isPro.value = !isPro.value;
+    }
   }
 
   Future<void> init() async {
-    if (_forceFreePro) {
-      isPro.value = true;
-      return;
-    }
     if (kIsWeb) return;
 
     try {
@@ -103,10 +102,6 @@ class PaywallService {
   }
 
   Future<void> checkProStatus() async {
-    if (_forceFreePro) {
-      isPro.value = true;
-      return;
-    }
     if (kIsWeb) return;
 
     try {
@@ -116,25 +111,23 @@ class PaywallService {
       }
     } catch (e) {
       debugPrint('[PaywallService] Failed to check pro status: $e');
+      isPro.value = false;
     }
   }
 
   Future<bool> purchasePlan(AhlSubscriptionPlan plan) async {
-    if (_forceFreePro) {
-      isPro.value = true;
-      AnalyticsService().paywallConverted(
-        planId: plan.id,
-        isPro: true,
-      );
-      return true;
-    }
     try {
       if (plan.rcPackage != null && (Platform.isAndroid || Platform.isIOS)) {
         final result = await Purchases.purchase(PurchaseParams.package(plan.rcPackage!));
         isPro.value = result.customerInfo.entitlements.all['pro']?.isActive ?? false;
-      } else {
-        // Mock / Sandbox / Testing purchase
+      } else if (kDebugMode) {
+        // Mock purchase exclusively for local developer testing
         isPro.value = true;
+      } else {
+        // In production release, never grant free pro without active Google Play purchase
+        debugPrint('[PaywallService] Purchase rejected: No valid RevenueCat package or store active');
+        isPro.value = false;
+        return false;
       }
 
       AnalyticsService().paywallConverted(
@@ -149,17 +142,15 @@ class PaywallService {
   }
 
   Future<bool> restorePurchases() async {
-    if (_forceFreePro) {
-      isPro.value = true;
-      AnalyticsService().paywallRestored(isPro: true);
-      return true;
-    }
     try {
       if (Platform.isAndroid || Platform.isIOS) {
         final customerInfo = await Purchases.restorePurchases();
         isPro.value = customerInfo.entitlements.all['pro']?.isActive ?? false;
-      } else {
+      } else if (kDebugMode) {
         isPro.value = true;
+      } else {
+        isPro.value = false;
+        return false;
       }
 
       AnalyticsService().paywallRestored(isPro: isPro.value);

@@ -429,19 +429,51 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ValueListenableBuilder<bool>(
                       valueListenable: _paywallService.isPro,
                       builder: (context, isPro, _) {
+                        if (isPro) {
+                          return ListTile(
+                            leading: const Icon(Icons.workspace_premium_rounded, color: AppTheme.accentGold),
+                            title: Text(
+                              isArabic ? 'عضوية أهل برو: نشطة' : 'Ahl Pro Status: Active',
+                              style: AppTheme.body(fontSize: 13, fontWeight: FontWeight.bold, lang: _currentLang),
+                            ),
+                            subtitle: Text(
+                              isArabic
+                                  ? 'اشتراكك نشط عبر Google Play'
+                                  : 'Subscription active via Google Play',
+                              style: AppTheme.body(fontSize: 11, color: AppTheme.inkSecondary, lang: _currentLang),
+                            ),
+                            trailing: const Icon(Icons.check_circle_rounded, color: AppTheme.accentGold),
+                          );
+                        }
                         return ListTile(
-                          leading: const Icon(Icons.workspace_premium_rounded, color: AppTheme.accentGold),
+                          leading: const Icon(Icons.workspace_premium_outlined, color: AppTheme.primaryTeal),
                           title: Text(
-                            isArabic ? 'عضوية أهل برو: مفعّلة بالكامل' : 'Ahl Pro Status: Active & Unlocked',
+                            isArabic ? 'باقة أهل: الباقة المجانية' : 'Ahl Tier: Free Basic',
                             style: AppTheme.body(fontSize: 13, fontWeight: FontWeight.bold, lang: _currentLang),
                           ),
                           subtitle: Text(
                             isArabic
-                                ? 'جميع الميزات المتقدمة مفتوحة مجاناً وبلا قيود'
-                                : 'All premium features are fully unlocked for free',
+                                ? 'الترقية إلى أهل برو للميزات العائلية غير المحدودة'
+                                : 'Upgrade to Ahl Pro for unlimited family features',
                             style: AppTheme.body(fontSize: 11, color: AppTheme.inkSecondary, lang: _currentLang),
                           ),
-                          trailing: const Icon(Icons.check_circle_rounded, color: AppTheme.accentGold),
+                          trailing: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryTealLight,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              isArabic ? 'ترقية' : 'Upgrade',
+                              style: AppTheme.body(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.primaryTeal,
+                                lang: _currentLang,
+                              ),
+                            ),
+                          ),
+                          onTap: () => PaywallScreen.show(context, trigger: 'settings_tier_tile'),
                         );
                       },
                     ),

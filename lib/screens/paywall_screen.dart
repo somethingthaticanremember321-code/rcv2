@@ -301,29 +301,29 @@ class _PaywallScreenState extends State<PaywallScreen> {
                             const SizedBox(width: 12),
                             Expanded(
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    isArabic ? 'عضوية أهل برو مفعّلة لديك 🎉' : 'Ahl Pro Active On Device 🎉',
-                                    style: AppTheme.body(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppTheme.inkPrimary,
-                                      lang: lang,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      isArabic ? 'عضوية أهل برو نشطة لديك 🎉' : 'Ahl Pro Active 🎉',
+                                      style: AppTheme.body(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppTheme.inkPrimary,
+                                        lang: lang,
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    isArabic
-                                        ? 'جميع الميزات المتقدمة مفتوحة مجاناً بدون قيود.'
-                                        : 'All premium features are fully unlocked for free.',
-                                    style: AppTheme.body(
-                                      fontSize: 11,
-                                      color: AppTheme.inkSecondary,
-                                      lang: lang,
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      isArabic
+                                          ? 'اشتراكك نشط عبر Google Play. جميع الميزات المتقدمة متاحة.'
+                                          : 'Your subscription is active via Google Play. All premium features are unlocked.',
+                                      style: AppTheme.body(
+                                        fontSize: 11,
+                                        color: AppTheme.inkSecondary,
+                                        lang: lang,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
                               ),
                             ),
                           ],

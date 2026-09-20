@@ -235,8 +235,8 @@ class _HouseholdDashboardScreenState extends State<HouseholdDashboardScreen> {
                           ),
                           content: Text(
                             isArabic
-                                ? 'أهل برو مفعّل بالكامل ومجاناً على هذا الجهاز! جميع ميزات المساهمين والميزانيات الموسمية وحسابات الزكاة وتصدير البيانات مفتوحة بلا حدود.'
-                                : 'Ahl Pro is fully active and unlocked on this device! Unlimited contributors, seasonal budgets, Zakat portfolio tracking, and instant data exports are completely available.',
+                                ? 'عضوية أهل برو نشطة عبر Google Play. جميع ميزات المساهمين والميزانيات الموسمية وحسابات الزكاة وتصدير البيانات مفتوحة بلا حدود.'
+                                : 'Ahl Pro is active via Google Play. Unlimited contributors, seasonal budgets, Zakat portfolio tracking, and instant data exports are completely available.',
                             style: AppTheme.body(fontSize: 13, lang: lang),
                           ),
                           actions: [
