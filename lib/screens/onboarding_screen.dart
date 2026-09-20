@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../data/subscription_catalog.dart';
 import '../services/database_service.dart';
 import '../theme/app_theme.dart';
 import 'main_navigation_screen.dart';
@@ -37,16 +38,23 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final TextEditingController _schoolController = TextEditingController();
   final TextEditingController _helperController = TextEditingController();
 
-  // STEP 4: GCC Subscription Radar
-  final List<Map<String, dynamic>> _gccSubscriptions = [
-    {'id': 'shahid', 'name': 'Shahid VIP', 'cost': 49.0, 'icon': Icons.movie_filter_outlined, 'selected': false},
-    {'id': 'netflix', 'name': 'Netflix', 'cost': 55.0, 'icon': Icons.play_circle_outline, 'selected': false},
-    {'id': 'talabat', 'name': 'Talabat Pro', 'cost': 30.0, 'icon': Icons.delivery_dining_outlined, 'selected': false},
-    {'id': 'gym', 'name': 'Gym / Fitness', 'cost': 350.0, 'icon': Icons.fitness_center_rounded, 'selected': false},
-    {'id': 'apple', 'name': 'Apple One / iCloud', 'cost': 45.0, 'icon': Icons.cloud_queue_rounded, 'selected': false},
-    {'id': 'prime', 'name': 'Amazon Prime', 'cost': 16.0, 'icon': Icons.shopping_bag_outlined, 'selected': false},
-    {'id': 'bein', 'name': 'beIN Sports', 'cost': 85.0, 'icon': Icons.sports_soccer_rounded, 'selected': false},
-    {'id': 'chatgpt', 'name': 'ChatGPT Plus', 'cost': 80.0, 'icon': Icons.auto_awesome_outlined, 'selected': false},
+  // STEP 4: GCC Subscription Radar (100+ Curated Catalog & Custom Subscriptions)
+  late List<SubscriptionCatalogItem> _subscriptions;
+  final TextEditingController _subSearchController = TextEditingController();
+  String _selectedCategoryFilter = 'all';
+
+  final List<Map<String, String>> _subscriptionCategories = const [
+    {'id': 'all', 'nameEn': 'All (100+)', 'nameAr': 'الكل (+١٠٠)'},
+    {'id': 'streaming', 'nameEn': 'Streaming', 'nameAr': 'ترفيه وبث'},
+    {'id': 'food_delivery', 'nameEn': 'Food & Delivery', 'nameAr': 'توصيل ومطاعم'},
+    {'id': 'music', 'nameEn': 'Music', 'nameAr': 'موسيقى'},
+    {'id': 'cloud_telecom', 'nameEn': 'Cloud & Telco', 'nameAr': 'اتصالات وسحابيات'},
+    {'id': 'ai_tech', 'nameEn': 'AI & Tech', 'nameAr': 'ذكاء اصطناعي وتقنية'},
+    {'id': 'gaming', 'nameEn': 'Gaming', 'nameAr': 'ألعاب'},
+    {'id': 'fitness', 'nameEn': 'Fitness & Health', 'nameAr': 'رياضة وصحة'},
+    {'id': 'kids_edu', 'nameEn': 'Learning & Kids', 'nameAr': 'تعليم وأطفال'},
+    {'id': 'news_business', 'nameEn': 'News & Business', 'nameAr': 'أخبار وأعمال'},
+    {'id': 'home_auto', 'nameEn': 'Auto & Home', 'nameAr': 'سيارات ومنزل'},
   ];
 
   final List<Map<String, String>> _gccCurrencies = [
@@ -132,6 +140,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     _housingController.text = '6000';
     _utilitiesController.text = '1000';
     _groceriesController.text = '3500';
+
+    _subscriptions = getDefaultSubscriptionCatalog();
   }
 
   @override
@@ -147,6 +157,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     _groceriesController.dispose();
     _schoolController.dispose();
     _helperController.dispose();
+    _subSearchController.dispose();
     super.dispose();
   }
 
@@ -194,11 +205,26 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   double get _totalSubscriptions {
-    double sum = 0.0;
-    for (final s in _gccSubscriptions) {
-      if (s['selected'] == true) sum += (s['cost'] as double);
-    }
-    return sum;
+    return _subscriptions
+        .where((s) => s.isSelected)
+        .fold(0.0, (sum, item) => sum + item.cost);
+  }
+
+  int get _selectedSubscriptionsCount => _subscriptions.where((s) => s.isSelected).length;
+
+  List<SubscriptionCatalogItem> get _filteredSubscriptions {
+    final query = _subSearchController.text.trim().toLowerCase();
+    return _subscriptions.where((item) {
+      final matchesCategory = _selectedCategoryFilter == 'all' || item.category == _selectedCategoryFilter;
+      if (!matchesCategory) return false;
+
+      if (query.isEmpty) return true;
+      final nameEnMatch = item.nameEn.toLowerCase().contains(query);
+      final nameArMatch = item.nameAr.toLowerCase().contains(query);
+      final catEnMatch = item.categoryEn.toLowerCase().contains(query);
+      final catArMatch = item.categoryAr.toLowerCase().contains(query);
+      return nameEnMatch || nameArMatch || catEnMatch || catArMatch;
+    }).toList();
   }
 
   double get _unallocatedSurplus => _totalInflows - _totalFixedCommitments - _totalSubscriptions;
@@ -223,7 +249,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       if (_parseVal(_helperController) > 0) 'domestic_help': _parseVal(_helperController),
     };
 
-    final selectedSubs = _gccSubscriptions.where((s) => s['selected'] == true).toList();
+    final selectedSubs = _subscriptions.where((s) => s.isSelected).map((s) => s.toMap()).toList();
 
     await _db.applyOnboardingFinancialAssessment(
       language: _selectedLang,
@@ -786,6 +812,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   // --- STEP 4: GCC SUBSCRIPTION RADAR ---
   // ==========================================
   Widget _buildStep4SubscriptionRadar(bool isArabic) {
+    final filtered = _filteredSubscriptions;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
@@ -793,77 +821,277 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         children: [
           const SizedBox(height: 8),
           Text(
-            isArabic ? 'رادار الاشتراكات الرقمية' : 'GCC Subscription Radar',
+            isArabic ? 'رادار الاشتراكات الرقمية (+١٠٠)' : 'GCC Subscription Radar (100+)',
             style: AppTheme.editorialHeading(fontSize: 22, lang: _selectedLang),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 6),
           Text(
             isArabic
-                ? 'حدد الاشتراكات التي تستخدمها أسرتكم لكشف النزيف المالي التراكمي.'
-                : 'Select the subscriptions your family pays to audit recurring leaks.',
+                ? 'ابحث في أكثر من ١٠٠ اشتراك خليجي وعالمي، أو أضف اشتراكاً مخصصاً لكشف النزيف المالي التراكمي.'
+                : 'Search 100+ subscriptions or add custom recurring spend to audit leaks.',
             style: AppTheme.body(fontSize: 13, color: AppTheme.inkSecondary, lang: _selectedLang),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
 
-          // Grid of Subscriptions
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: _gccSubscriptions.map((sub) {
-              final isSelected = sub['selected'] as bool;
-              final cost = sub['cost'] as double;
-              return InkWell(
-                onTap: () {
-                  setState(() {
-                    sub['selected'] = !isSelected;
-                  });
-                },
+          // Search Field
+          TextField(
+            controller: _subSearchController,
+            onChanged: (_) => setState(() {}),
+            style: AppTheme.body(fontSize: 13, lang: _selectedLang),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: AppTheme.surfaceCard,
+              hintText: isArabic
+                  ? 'ابحث في الاشتراكات (نتفليكس، طلبات، جيم، شات جي بي تي...)'
+                  : 'Search 100+ subscriptions (Netflix, Talabat, Gym, AI...)',
+              hintStyle: AppTheme.body(fontSize: 12, color: AppTheme.inkMuted, lang: _selectedLang),
+              prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.primaryTeal, size: 20),
+              suffixIcon: _subSearchController.text.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear_rounded, size: 18),
+                      onPressed: () {
+                        _subSearchController.clear();
+                        setState(() {});
+                      },
+                    )
+                  : null,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: isSelected ? AppTheme.accentGoldLight : AppTheme.surfaceCard,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: isSelected ? AppTheme.accentGold : AppTheme.surfaceBorder,
-                      width: isSelected ? 1.5 : 1,
+                borderSide: const BorderSide(color: AppTheme.surfaceBorder),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: AppTheme.surfaceBorder),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // Action & Counter Bar
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Selected Counter Pill
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: _selectedSubscriptionsCount > 0 ? AppTheme.accentGoldLight : AppTheme.surfaceCard,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: _selectedSubscriptionsCount > 0 ? AppTheme.accentGoldBorder : AppTheme.surfaceBorder,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      _selectedSubscriptionsCount > 0 ? Icons.check_circle_rounded : Icons.checklist_rounded,
+                      size: 14,
+                      color: _selectedSubscriptionsCount > 0 ? AppTheme.accentGold : AppTheme.inkMuted,
                     ),
+                    const SizedBox(width: 4),
+                    Text(
+                      isArabic
+                          ? 'المحدد: $_selectedSubscriptionsCount'
+                          : 'Selected: $_selectedSubscriptionsCount',
+                      style: AppTheme.body(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: _selectedSubscriptionsCount > 0 ? AppTheme.inkPrimary : AppTheme.inkSecondary,
+                        lang: _selectedLang,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Add Custom Subscription CTA
+              InkWell(
+                onTap: () => _showAddCustomSubscriptionSheet(context, isArabic),
+                borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryTealLight,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: AppTheme.primaryTealBorder),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        sub['icon'] as IconData,
-                        size: 18,
-                        color: isSelected ? AppTheme.accentGold : AppTheme.inkSecondary,
-                      ),
-                      const SizedBox(width: 8),
+                      const Icon(Icons.add_rounded, size: 15, color: AppTheme.primaryTeal),
+                      const SizedBox(width: 4),
                       Text(
-                        sub['name'] as String,
+                        isArabic ? 'إضافة اشتراك مخصص' : '+ Custom Subscription',
                         style: AppTheme.body(
-                          fontSize: 12,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                          color: isSelected ? AppTheme.inkPrimary : AppTheme.inkSecondary,
-                          lang: _selectedLang,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        '~${cost.toInt()}',
-                        style: AppTheme.amountMonospace(
                           fontSize: 11,
-                          color: isSelected ? AppTheme.accentGold : AppTheme.inkMuted,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.primaryTeal,
+                          lang: _selectedLang,
                         ),
                       ),
                     ],
                   ),
                 ),
-              );
-            }).toList(),
+              ),
+            ],
           ),
+
+          const SizedBox(height: 12),
+
+          // Horizontal Category Filter Bar
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: _subscriptionCategories.map((cat) {
+                final isSelected = _selectedCategoryFilter == cat['id'];
+                final label = isArabic ? cat['nameAr']! : cat['nameEn']!;
+                return Padding(
+                  padding: const EdgeInsetsDirectional.only(end: 6),
+                  child: ChoiceChip(
+                    label: Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        color: isSelected ? Colors.white : AppTheme.inkSecondary,
+                      ),
+                    ),
+                    selected: isSelected,
+                    selectedColor: AppTheme.primaryTeal,
+                    backgroundColor: AppTheme.surfaceCard,
+                    side: BorderSide(
+                      color: isSelected ? AppTheme.primaryTeal : AppTheme.surfaceBorder,
+                    ),
+                    visualDensity: VisualDensity.compact,
+                    onSelected: (selected) {
+                      if (selected) {
+                        setState(() => _selectedCategoryFilter = cat['id']!);
+                      }
+                    },
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // Subscriptions Grid / Empty State
+          if (filtered.isEmpty)
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 16),
+              decoration: BoxDecoration(
+                color: AppTheme.surfaceCard,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppTheme.surfaceBorder),
+              ),
+              child: Column(
+                children: [
+                  const Icon(Icons.search_off_rounded, size: 36, color: AppTheme.inkMuted),
+                  const SizedBox(height: 8),
+                  Text(
+                    isArabic
+                        ? 'لم نجد اشتراكاً يطابق "${_subSearchController.text}"'
+                        : 'No subscription matching "${_subSearchController.text}"',
+                    style: AppTheme.body(fontSize: 13, color: AppTheme.inkSecondary, lang: _selectedLang),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  ElevatedButton.icon(
+                    onPressed: () => _showAddCustomSubscriptionSheet(context, isArabic),
+                    icon: const Icon(Icons.add_rounded, size: 16),
+                    label: Text(
+                      isArabic
+                          ? 'إضافة "${_subSearchController.text}" كاشتراك مخصص'
+                          : 'Add "${_subSearchController.text}" as custom',
+                      style: AppTheme.body(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white, lang: _selectedLang),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primaryTeal,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: filtered.map((sub) {
+                final isSelected = sub.isSelected;
+                final cost = sub.cost;
+                return InkWell(
+                  onTap: () {
+                    setState(() {
+                      sub.isSelected = !isSelected;
+                    });
+                  },
+                  borderRadius: BorderRadius.circular(12),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: isSelected ? AppTheme.accentGoldLight : AppTheme.surfaceCard,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isSelected ? AppTheme.accentGold : AppTheme.surfaceBorder,
+                        width: isSelected ? 1.5 : 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          sub.icon,
+                          size: 16,
+                          color: isSelected ? AppTheme.accentGold : AppTheme.inkSecondary,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          sub.displayName(_selectedLang),
+                          style: AppTheme.body(
+                            fontSize: 11,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            color: isSelected ? AppTheme.inkPrimary : AppTheme.inkSecondary,
+                            lang: _selectedLang,
+                          ),
+                        ),
+                        if (sub.isCustom) ...[
+                          const SizedBox(width: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                            decoration: BoxDecoration(
+                              color: AppTheme.accentGold,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              isArabic ? 'خاص' : 'Custom',
+                              style: const TextStyle(fontSize: 9, color: Colors.white, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                        const SizedBox(width: 6),
+                        Text(
+                          '~${cost.toInt()}',
+                          style: AppTheme.amountMonospace(
+                            fontSize: 11,
+                            color: isSelected ? AppTheme.accentGold : AppTheme.inkMuted,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
 
           const SizedBox(height: 20),
 
@@ -917,7 +1145,213 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ],
             ),
           ),
+          const SizedBox(height: 16),
         ],
+      ),
+    );
+  }
+
+  void _showAddCustomSubscriptionSheet(BuildContext context, bool isArabic) {
+    final nameController = TextEditingController(text: _subSearchController.text.trim());
+    final costController = TextEditingController();
+    IconData selectedIcon = Icons.star_rounded;
+
+    final presetIcons = const [
+      Icons.star_rounded,
+      Icons.fitness_center_rounded,
+      Icons.movie_outlined,
+      Icons.fastfood_outlined,
+      Icons.cloud_outlined,
+      Icons.directions_car_outlined,
+      Icons.school_outlined,
+      Icons.videogame_asset_outlined,
+      Icons.music_note_outlined,
+      Icons.card_membership_outlined,
+      Icons.pets_outlined,
+      Icons.shopping_bag_outlined,
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) {
+          final keyboardPadding = MediaQuery.of(ctx).viewInsets.bottom;
+          final currency = isArabic ? _selectedCurrencySymbol : _selectedCurrencyCode;
+
+          return Container(
+            padding: EdgeInsets.fromLTRB(24, 20, 24, 20 + keyboardPadding),
+            decoration: const BoxDecoration(
+              color: AppTheme.creamBg,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppTheme.surfaceBorder,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    isArabic ? 'إضافة اشتراك مخصص' : 'Add Custom Subscription',
+                    style: AppTheme.editorialHeading(fontSize: 18, lang: _selectedLang),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    isArabic
+                        ? 'أدخل اسم الاشتراك وتكلفته الشهرية لإدراجه في حسابات النزيف المالي.'
+                        : 'Enter name and monthly cost to track recurring leakage.',
+                    style: AppTheme.body(fontSize: 12, color: AppTheme.inkSecondary, lang: _selectedLang),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Subscription Name
+                  Text(
+                    isArabic ? 'اسم الاشتراك أو الخدمة' : 'Subscription / Service Name',
+                    style: AppTheme.label(fontSize: 12, color: AppTheme.inkSecondary, lang: _selectedLang),
+                  ),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: nameController,
+                    style: AppTheme.body(fontSize: 14, fontWeight: FontWeight.bold, lang: _selectedLang),
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: AppTheme.surfaceCard,
+                      hintText: isArabic ? 'مثال: مدرب شخصي، سباحة، مدرسة لغات...' : 'e.g. Personal Trainer, Swimming Club...',
+                      prefixIcon: Icon(selectedIcon, color: AppTheme.accentGold),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(color: AppTheme.surfaceBorder),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(color: AppTheme.surfaceBorder),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Monthly Cost
+                  _buildAmountField(
+                    controller: costController,
+                    label: isArabic ? 'التكلفة الشهرية ($currency)' : 'Monthly Cost ($currency)',
+                    hint: '100',
+                    currency: currency,
+                    icon: Icons.payments_outlined,
+                    isArabic: isArabic,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Icon Picker
+                  Text(
+                    isArabic ? 'اختر أيقونة' : 'Choose an Icon',
+                    style: AppTheme.label(fontSize: 12, color: AppTheme.inkSecondary, lang: _selectedLang),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: presetIcons.map((ic) {
+                      final isSel = selectedIcon == ic;
+                      return InkWell(
+                        onTap: () => setModalState(() => selectedIcon = ic),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: isSel ? AppTheme.accentGoldLight : AppTheme.surfaceCard,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isSel ? AppTheme.accentGold : AppTheme.surfaceBorder,
+                              width: isSel ? 2 : 1,
+                            ),
+                          ),
+                          child: Icon(
+                            ic,
+                            size: 20,
+                            color: isSel ? AppTheme.accentGold : AppTheme.inkSecondary,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Add CTA
+                  ElevatedButton(
+                    onPressed: () {
+                      final name = nameController.text.trim();
+                      final cost = double.tryParse(costController.text.replaceAll(',', '').trim()) ?? 0.0;
+                      if (name.isEmpty || cost <= 0) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              isArabic ? 'يرجى إدخال اسم الاشتراك وتكلفة صالحة.' : 'Please enter a name and valid cost.',
+                            ),
+                            backgroundColor: AppTheme.terracotta,
+                          ),
+                        );
+                        return;
+                      }
+
+                      final customItem = SubscriptionCatalogItem(
+                        id: 'custom_${DateTime.now().millisecondsSinceEpoch}',
+                        nameEn: name,
+                        nameAr: name,
+                        cost: cost,
+                        icon: selectedIcon,
+                        category: 'custom',
+                        categoryEn: 'Custom',
+                        categoryAr: 'مخصص',
+                        isSelected: true,
+                        isCustom: true,
+                      );
+
+                      setState(() {
+                        _subscriptions.insert(0, customItem);
+                        _subSearchController.clear();
+                      });
+
+                      Navigator.pop(ctx);
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            isArabic ? 'تمت إضافة "$name" إلى رادار الاشتراكات 🎉' : 'Added "$name" to subscription radar 🎉',
+                          ),
+                          backgroundColor: AppTheme.primaryTeal,
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primaryTeal,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                    child: Text(
+                      isArabic ? 'إضافة الاشتراك وتفعيله' : 'Add & Activate Subscription',
+                      style: AppTheme.body(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white, lang: _selectedLang),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }

@@ -70,6 +70,10 @@ class _PaywallScreenState extends State<PaywallScreen> {
   }
 
   Future<void> _handlePurchase() async {
+    if (_paywallService.isProUser) {
+      Navigator.of(context).pop(true);
+      return;
+    }
     if (_selectedPlan == null || _isPurchasing) return;
 
     setState(() => _isPurchasing = true);
@@ -278,6 +282,56 @@ class _PaywallScreenState extends State<PaywallScreen> {
 
                   const SizedBox(height: 20),
 
+                  // Pro Active Banner when unlocked
+                  ValueListenableBuilder<bool>(
+                    valueListenable: _paywallService.isPro,
+                    builder: (context, isPro, _) {
+                      if (!isPro) return const SizedBox.shrink();
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: AppTheme.accentGoldLight,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: AppTheme.accentGoldBorder, width: 1.5),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.verified_rounded, color: AppTheme.accentGold, size: 28),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    isArabic ? 'عضوية أهل برو مفعّلة لديك 🎉' : 'Ahl Pro Active On Device 🎉',
+                                    style: AppTheme.body(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppTheme.inkPrimary,
+                                      lang: lang,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    isArabic
+                                        ? 'جميع الميزات المتقدمة مفتوحة مجاناً بدون قيود.'
+                                        : 'All premium features are fully unlocked for free.',
+                                    style: AppTheme.body(
+                                      fontSize: 11,
+                                      color: AppTheme.inkSecondary,
+                                      lang: lang,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+
                   // Subscription Plans Selector
                   if (_isLoading)
                     const Center(
@@ -399,6 +453,9 @@ class _PaywallScreenState extends State<PaywallScreen> {
   }
 
   String _getButtonText(bool isArabic) {
+    if (_paywallService.isProUser) {
+      return isArabic ? 'أهل برو مفعّل — متابعة' : 'Pro Active — Continue';
+    }
     if (_selectedPlan?.hasTrial ?? false) {
       return isArabic ? 'ابدأ التجربة المجانية لمدة ٧ أيام' : 'Start 7-Day Free Trial';
     }

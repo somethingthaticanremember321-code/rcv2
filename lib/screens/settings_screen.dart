@@ -426,6 +426,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 child: Column(
                   children: [
+                    ValueListenableBuilder<bool>(
+                      valueListenable: _paywallService.isPro,
+                      builder: (context, isPro, _) {
+                        return ListTile(
+                          leading: const Icon(Icons.workspace_premium_rounded, color: AppTheme.accentGold),
+                          title: Text(
+                            isArabic ? 'عضوية أهل برو: مفعّلة بالكامل' : 'Ahl Pro Status: Active & Unlocked',
+                            style: AppTheme.body(fontSize: 13, fontWeight: FontWeight.bold, lang: _currentLang),
+                          ),
+                          subtitle: Text(
+                            isArabic
+                                ? 'جميع الميزات المتقدمة مفتوحة مجاناً وبلا قيود'
+                                : 'All premium features are fully unlocked for free',
+                            style: AppTheme.body(fontSize: 11, color: AppTheme.inkSecondary, lang: _currentLang),
+                          ),
+                          trailing: const Icon(Icons.check_circle_rounded, color: AppTheme.accentGold),
+                        );
+                      },
+                    ),
+                    const Divider(height: 1, indent: 16, endIndent: 16),
                     ListTile(
                       leading: const Icon(Icons.file_download_outlined, color: AppTheme.primaryTeal),
                       title: Text(

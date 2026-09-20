@@ -217,29 +217,61 @@ class _HouseholdDashboardScreenState extends State<HouseholdDashboardScreen> {
               valueListenable: _paywallService.isPro,
               builder: (context, isPro, _) {
                 if (isPro) {
-                  return Container(
-                    margin: const EdgeInsetsDirectional.only(end: 4),
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppTheme.accentGoldLight,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppTheme.accentGoldBorder),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.star_rounded, size: 14, color: AppTheme.accentGold),
-                        const SizedBox(width: 4),
-                        Text(
-                          isArabic ? 'برو' : 'PRO',
-                          style: AppTheme.body(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.accentGold,
-                            lang: lang,
+                  return InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          title: Row(
+                            children: [
+                              const Icon(Icons.workspace_premium_rounded, color: AppTheme.accentGold),
+                              const SizedBox(width: 8),
+                              Text(
+                                isArabic ? 'عضوية أهل برو' : 'Ahl Pro Membership',
+                                style: AppTheme.editorialHeading(fontSize: 18, lang: lang),
+                              ),
+                            ],
                           ),
+                          content: Text(
+                            isArabic
+                                ? 'أهل برو مفعّل بالكامل ومجاناً على هذا الجهاز! جميع ميزات المساهمين والميزانيات الموسمية وحسابات الزكاة وتصدير البيانات مفتوحة بلا حدود.'
+                                : 'Ahl Pro is fully active and unlocked on this device! Unlimited contributors, seasonal budgets, Zakat portfolio tracking, and instant data exports are completely available.',
+                            style: AppTheme.body(fontSize: 13, lang: lang),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx),
+                              child: Text(isArabic ? 'حسناً' : 'Great'),
+                            ),
+                          ],
                         ),
-                      ],
+                      );
+                    },
+                    child: Container(
+                      margin: const EdgeInsetsDirectional.only(end: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppTheme.accentGoldLight,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppTheme.accentGoldBorder),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.star_rounded, size: 14, color: AppTheme.accentGold),
+                          const SizedBox(width: 4),
+                          Text(
+                            isArabic ? 'برو' : 'PRO',
+                            style: AppTheme.body(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.accentGold,
+                              lang: lang,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 }

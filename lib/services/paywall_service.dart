@@ -42,7 +42,7 @@ class PaywallService {
   static const String _appleApiKey = ApiConfig.revenueCatAppleApiKey;
   static const String _googleApiKey = ApiConfig.revenueCatGoogleApiKey;
 
-  static const bool _forceFreePro = bool.fromEnvironment('FREE_PRO', defaultValue: false);
+  static const bool _forceFreePro = bool.fromEnvironment('FREE_PRO', defaultValue: true);
   final ValueNotifier<bool> isPro = ValueNotifier(_forceFreePro);
 
   // Freemium Entitlement Gate Limits
@@ -120,6 +120,14 @@ class PaywallService {
   }
 
   Future<bool> purchasePlan(AhlSubscriptionPlan plan) async {
+    if (_forceFreePro) {
+      isPro.value = true;
+      AnalyticsService().paywallConverted(
+        planId: plan.id,
+        isPro: true,
+      );
+      return true;
+    }
     try {
       if (plan.rcPackage != null && (Platform.isAndroid || Platform.isIOS)) {
         final result = await Purchases.purchase(PurchaseParams.package(plan.rcPackage!));
@@ -141,6 +149,11 @@ class PaywallService {
   }
 
   Future<bool> restorePurchases() async {
+    if (_forceFreePro) {
+      isPro.value = true;
+      AnalyticsService().paywallRestored(isPro: true);
+      return true;
+    }
     try {
       if (Platform.isAndroid || Platform.isIOS) {
         final customerInfo = await Purchases.restorePurchases();
