@@ -512,7 +512,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               // Version Badge
               Center(
                 child: Text(
-                  isArabic ? 'مالي - الإصدار 1.0.11' : 'Mali — Version 1.0.11',
+                  isArabic ? 'مالي - الإصدار 1.0.12' : 'Mali — Version 1.0.12',
                   style: AppTheme.label(fontSize: 11, color: AppTheme.inkMuted, lang: _currentLang),
                 ),
               ),
