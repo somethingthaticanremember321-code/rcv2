@@ -5,8 +5,8 @@ import 'package:purchases_flutter/purchases_flutter.dart';
 import '../config/api_config.dart';
 import 'analytics_service.dart';
 
-/// Presentation model representing an Ahl Pro subscription plan
-class AhlSubscriptionPlan {
+/// Presentation model representing a Mali Pro subscription plan
+class MaliSubscriptionPlan {
   final String id;
   final String titleEn;
   final String titleAr;
@@ -17,9 +17,10 @@ class AhlSubscriptionPlan {
   final String? savingsBadgeEn;
   final String? savingsBadgeAr;
   final bool hasTrial;
+  final bool isLifetime;
   final Package? rcPackage;
 
-  const AhlSubscriptionPlan({
+  const MaliSubscriptionPlan({
     required this.id,
     required this.titleEn,
     required this.titleAr,
@@ -30,9 +31,13 @@ class AhlSubscriptionPlan {
     this.savingsBadgeEn,
     this.savingsBadgeAr,
     this.hasTrial = false,
+    this.isLifetime = false,
     this.rcPackage,
   });
 }
+
+// Backward compatibility alias
+typedef AhlSubscriptionPlan = MaliSubscriptionPlan;
 
 class PaywallService {
   static final PaywallService _instance = PaywallService._internal();
@@ -101,13 +106,20 @@ class PaywallService {
     }
   }
 
+  bool _isEntitlementActive(CustomerInfo customerInfo) {
+    return (customerInfo.entitlements.all['pro']?.isActive ?? false) ||
+        (customerInfo.entitlements.all['premium']?.isActive ?? false) ||
+        (customerInfo.entitlements.all['mali_pro']?.isActive ?? false) ||
+        customerInfo.entitlements.active.isNotEmpty;
+  }
+
   Future<void> checkProStatus() async {
     if (kIsWeb) return;
 
     try {
       if (Platform.isAndroid || Platform.isIOS) {
         final customerInfo = await Purchases.getCustomerInfo();
-        isPro.value = customerInfo.entitlements.all['pro']?.isActive ?? false;
+        isPro.value = _isEntitlementActive(customerInfo);
       }
     } catch (e) {
       debugPrint('[PaywallService] Failed to check pro status: $e');
@@ -115,11 +127,11 @@ class PaywallService {
     }
   }
 
-  Future<bool> purchasePlan(AhlSubscriptionPlan plan) async {
+  Future<bool> purchasePlan(MaliSubscriptionPlan plan) async {
     try {
       if (plan.rcPackage != null && (Platform.isAndroid || Platform.isIOS)) {
         final result = await Purchases.purchase(PurchaseParams.package(plan.rcPackage!));
-        isPro.value = result.customerInfo.entitlements.all['pro']?.isActive ?? false;
+        isPro.value = _isEntitlementActive(result.customerInfo);
       } else if (kDebugMode) {
         // Mock purchase exclusively for local developer testing
         isPro.value = true;
@@ -145,7 +157,7 @@ class PaywallService {
     try {
       if (Platform.isAndroid || Platform.isIOS) {
         final customerInfo = await Purchases.restorePurchases();
-        isPro.value = customerInfo.entitlements.all['pro']?.isActive ?? false;
+        isPro.value = _isEntitlementActive(customerInfo);
       } else if (kDebugMode) {
         isPro.value = true;
       } else {
@@ -163,7 +175,7 @@ class PaywallService {
   }
 
   /// Returns packages from RevenueCat if available, or returns high-quality fallback plans
-  Future<List<AhlSubscriptionPlan>> getAvailablePlans({String currencySymbol = 'QAR'}) async {
+  Future<List<MaliSubscriptionPlan>> getAvailablePlans({String currencySymbol = 'SAR'}) async {
     try {
       if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
         final offerings = await Purchases.getOfferings();
@@ -171,18 +183,50 @@ class PaywallService {
           final packages = offerings.current!.availablePackages;
           return packages.map((pkg) {
             final isAnnual = pkg.packageType == PackageType.annual;
+            final isLifetime = pkg.packageType == PackageType.lifetime ||
+                pkg.identifier.toLowerCase().contains('lifetime');
             final priceStr = pkg.storeProduct.priceString;
-            return AhlSubscriptionPlan(
+
+            String titleEn;
+            String titleAr;
+            String periodEn;
+            String periodAr;
+            String? savingsBadgeEn;
+            String? savingsBadgeAr;
+
+            if (isLifetime) {
+              titleEn = 'Mali Lifetime';
+              titleAr = 'مالي مدى الحياة';
+              periodEn = 'One-time payment • Own forever';
+              periodAr = 'دفع لمرة واحدة • امتلاك دائم';
+              savingsBadgeEn = 'FOUNDER PASS';
+              savingsBadgeAr = 'باقة التأسيس';
+            } else if (isAnnual) {
+              titleEn = 'Mali Pro Annual';
+              titleAr = 'مالي برو — سنوي (الأفضل)';
+              periodEn = 'Billed annually • 7-day free trial';
+              periodAr = 'يُدفع سنوياً • تجربة مجانية ٧ أيام';
+              savingsBadgeEn = 'SAVE 55%';
+              savingsBadgeAr = 'وفّر ٥٥٪';
+            } else {
+              titleEn = 'Mali Pro Monthly';
+              titleAr = 'مالي برو — شهري';
+              periodEn = 'Flexible monthly billing';
+              periodAr = 'اشتراك شهري مرن';
+            }
+
+            return MaliSubscriptionPlan(
               id: pkg.identifier,
-              titleEn: isAnnual ? 'Ahl Pro Annual' : 'Ahl Pro Monthly',
-              titleAr: isAnnual ? 'أهل برو — سنوي' : 'أهل برو — شهري',
-              priceDisplayEn: isAnnual ? '$priceStr / year' : '$priceStr / month',
-              priceDisplayAr: isAnnual ? '$priceStr / سنوياً' : '$priceStr / شهرياً',
-              periodEn: isAnnual ? 'Billed annually' : 'Billed monthly',
-              periodAr: isAnnual ? 'يُدفع سنوياً' : 'يُدفع شهرياً',
-              savingsBadgeEn: isAnnual ? 'SAVE 45%' : null,
-              savingsBadgeAr: isAnnual ? 'وفّر ٤٥٪' : null,
+              titleEn: titleEn,
+              titleAr: titleAr,
+              priceDisplayEn: isLifetime ? priceStr : (isAnnual ? '$priceStr / year' : '$priceStr / month'),
+              priceDisplayAr: isLifetime ? priceStr : (isAnnual ? '$priceStr / سنوياً' : '$priceStr / شهرياً'),
+              periodEn: periodEn,
+              periodAr: periodAr,
+              savingsBadgeEn: savingsBadgeEn,
+              savingsBadgeAr: savingsBadgeAr,
               hasTrial: isAnnual,
+              isLifetime: isLifetime,
               rcPackage: pkg,
             );
           }).toList();
@@ -192,29 +236,44 @@ class PaywallService {
       debugPrint('[PaywallService] Falling back to default plan definitions: $e');
     }
 
-    // Default premium plans tailored for GCC households
+    // Default premium plans tailored for GCC and global consumers
     return [
-      AhlSubscriptionPlan(
-        id: 'ahl_pro_annual',
-        titleEn: 'Ahl Pro Annual',
-        titleAr: 'أهل برو — سنوي (الأفضل)',
-        priceDisplayEn: '199.99 $currencySymbol / year',
-        priceDisplayAr: '١٩٩.٩٩ $currencySymbol / سنوياً',
-        periodEn: 'Equivalent to ~16.6 $currencySymbol/mo',
-        periodAr: 'يعادل ~١٦.٦ $currencySymbol شهرياً',
-        savingsBadgeEn: 'SAVE 45%',
-        savingsBadgeAr: 'وفّر ٤٥٪',
+      MaliSubscriptionPlan(
+        id: 'mali_pro_annual',
+        titleEn: 'Mali Pro Annual',
+        titleAr: 'مالي برو — سنوي (الأفضل)',
+        priceDisplayEn: '79.99 $currencySymbol / year',
+        priceDisplayAr: '٧٩.٩٩ $currencySymbol / سنوياً',
+        periodEn: 'Equivalent to ~6.6 $currencySymbol/mo • 7-Day Free Trial',
+        periodAr: 'يعادل ~٦.٦ $currencySymbol شهرياً • تجربة مجانية ٧ أيام',
+        savingsBadgeEn: 'SAVE 55%',
+        savingsBadgeAr: 'وفّر ٥٥٪',
         hasTrial: true,
+        isLifetime: false,
       ),
-      AhlSubscriptionPlan(
-        id: 'ahl_pro_monthly',
-        titleEn: 'Ahl Pro Monthly',
-        titleAr: 'أهل برو — شهري',
-        priceDisplayEn: '29.99 $currencySymbol / month',
-        priceDisplayAr: '٢٩.٩٩ $currencySymbol / شهرياً',
+      MaliSubscriptionPlan(
+        id: 'mali_pro_monthly',
+        titleEn: 'Mali Pro Monthly',
+        titleAr: 'مالي برو — شهري',
+        priceDisplayEn: '14.99 $currencySymbol / month',
+        priceDisplayAr: '١٤.٩٩ $currencySymbol / شهرياً',
         periodEn: 'Flexible monthly billing',
-        periodAr: 'اشتراك شهري مرن',
+        periodAr: 'اشتراك شهري مرن • إلغاء بأي وقت',
         hasTrial: false,
+        isLifetime: false,
+      ),
+      MaliSubscriptionPlan(
+        id: 'mali_pro_lifetime',
+        titleEn: 'Mali Lifetime',
+        titleAr: 'مالي مدى الحياة',
+        priceDisplayEn: '149.99 $currencySymbol',
+        priceDisplayAr: '١٤٩.٩٩ $currencySymbol',
+        periodEn: 'Pay once • Permanent updates • Zero renewals',
+        periodAr: 'دفع لمرة واحدة • تحديثات دائمة • بلا فواتير متكررة',
+        savingsBadgeEn: 'FOUNDER PASS',
+        savingsBadgeAr: 'امتلاك دائم',
+        hasTrial: false,
+        isLifetime: true,
       ),
     ];
   }

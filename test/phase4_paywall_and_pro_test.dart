@@ -104,13 +104,17 @@ void main() {
 
       final annualPlan = plans.firstWhere((p) => p.id.contains('annual'));
       expect(annualPlan.hasTrial, isTrue);
-      expect(annualPlan.savingsBadgeAr, contains('٤٥٪'));
-      expect(annualPlan.savingsBadgeEn, contains('45%'));
+      expect(annualPlan.savingsBadgeAr, contains('٥٥٪'));
+      expect(annualPlan.savingsBadgeEn, contains('55%'));
       expect(annualPlan.priceDisplayAr, contains('ر.ق'));
 
       final monthlyPlan = plans.firstWhere((p) => p.id.contains('monthly'));
       expect(monthlyPlan.hasTrial, isFalse);
       expect(monthlyPlan.priceDisplayAr, contains('ر.ق'));
+
+      final lifetimePlan = plans.firstWhere((p) => p.isLifetime);
+      expect(lifetimePlan.isLifetime, isTrue);
+      expect(lifetimePlan.priceDisplayAr, contains('ر.ق'));
     });
 
     test('5. ExportService generates UTF-8 BOM CSV for transactions', () {
@@ -198,7 +202,7 @@ void main() {
       );
 
       expect(csv.startsWith('\uFEFF'), isTrue);
-      expect(csv, contains('=== تقرير حساب الزكاة الشرعي — تطبيق أهل ==='));
+      expect(csv, contains('=== تقرير حساب الزكاة الشرعي — تطبيق مالي ==='));
       expect(csv, contains('1447 AH'));
       expect(csv, contains('27200.00'));
       expect(csv, contains('105000.00'));
@@ -227,15 +231,15 @@ void main() {
       await tester.pumpAndSettle();
 
       // Header & Branding
-      expect(find.text('أهل برو'), findsOneWidget);
+      expect(find.text('مالي برو'), findsOneWidget);
       expect(find.byIcon(Icons.workspace_premium_rounded), findsOneWidget);
 
       // Check for value propositions
-      expect(find.byIcon(Icons.people_alt_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.account_balance_wallet_rounded), findsOneWidget);
       expect(find.byIcon(Icons.auto_awesome_rounded), findsOneWidget);
       expect(find.byIcon(Icons.balance_rounded), findsOneWidget);
       expect(find.byIcon(Icons.table_chart_outlined), findsOneWidget);
-      expect(find.byIcon(Icons.shield_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.shield_outlined), findsWidgets);
 
       // Check plan cards rendered
       expect(find.byIcon(Icons.radio_button_checked), findsOneWidget);

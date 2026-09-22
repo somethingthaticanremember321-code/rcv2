@@ -150,13 +150,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
       members: members,
     );
 
-    final filename = 'ahl_export_${DateTime.now().millisecondsSinceEpoch}.csv';
+    final filename = 'mali_export_${DateTime.now().millisecondsSinceEpoch}.csv';
     await ExportService().shareCsv(
       csvContent: csv,
       filename: filename,
       subject: isArabic
-          ? 'تقرير معاملات أسرة ${_household.name}'
-          : '${_household.name} Household Transactions Export',
+          ? 'تقرير معاملات ${_household.name}'
+          : '${_household.name} Transactions Export',
     );
   }
 
@@ -433,7 +433,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           return ListTile(
                             leading: const Icon(Icons.workspace_premium_rounded, color: AppTheme.accentGold),
                             title: Text(
-                              isArabic ? 'عضوية أهل برو: نشطة' : 'Ahl Pro Status: Active',
+                              isArabic ? 'عضوية مالي برو: نشطة' : 'Mali Pro: Active',
                               style: AppTheme.body(fontSize: 13, fontWeight: FontWeight.bold, lang: _currentLang),
                             ),
                             subtitle: Text(
@@ -448,13 +448,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         return ListTile(
                           leading: const Icon(Icons.workspace_premium_outlined, color: AppTheme.primaryTeal),
                           title: Text(
-                            isArabic ? 'باقة أهل: الباقة المجانية' : 'Ahl Tier: Free Basic',
+                            isArabic ? 'باقة مالي: الباقة المجانية' : 'Mali Tier: Free Basic',
                             style: AppTheme.body(fontSize: 13, fontWeight: FontWeight.bold, lang: _currentLang),
                           ),
                           subtitle: Text(
                             isArabic
-                                ? 'الترقية إلى أهل برو للميزات العائلية غير المحدودة'
-                                : 'Upgrade to Ahl Pro for unlimited family features',
+                                ? 'الترقية إلى مالي برو للميزات المتقدمة وتتبع الثروة'
+                                : 'Upgrade to Mali Pro for advanced wealth & analytics',
                             style: AppTheme.body(fontSize: 11, color: AppTheme.inkSecondary, lang: _currentLang),
                           ),
                           trailing: Container(
@@ -512,7 +512,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               // Version Badge
               Center(
                 child: Text(
-                  isArabic ? 'أهل - الإصدار 1.0.9' : 'Ahl — Version 1.0.9',
+                  isArabic ? 'مالي - الإصدار 1.0.11' : 'Mali — Version 1.0.11',
                   style: AppTheme.label(fontSize: 11, color: AppTheme.inkMuted, lang: _currentLang),
                 ),
               ),

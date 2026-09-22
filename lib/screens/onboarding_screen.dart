@@ -4,6 +4,7 @@ import '../data/subscription_catalog.dart';
 import '../services/database_service.dart';
 import '../theme/app_theme.dart';
 import 'main_navigation_screen.dart';
+import 'paywall_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -147,32 +148,27 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       _householdNameController.text = h.name;
     } catch (_) {
       _selectedLang = 'ar';
-      _householdNameController.text = 'عائلتنا';
+      _householdNameController.text = 'محفظتي المالية';
     }
 
-    if (_householdNameController.text.isEmpty || _householdNameController.text == 'Our Household' || _householdNameController.text == 'عائلتنا') {
-      _householdNameController.text = _selectedLang == 'ar' ? 'عائلتنا' : 'Our Household';
+    if (_householdNameController.text.isEmpty ||
+        _householdNameController.text == 'Our Household' ||
+        _householdNameController.text == 'عائلتنا' ||
+        _householdNameController.text == 'محفظتي المالية' ||
+        _householdNameController.text == 'My Finances') {
+      _householdNameController.text = _selectedLang == 'ar' ? 'محفظتي المالية' : 'My Finances';
     }
 
-    // Initialize dynamic household contributors
+    // Initialize solo-first primary income (single earners won't see awkward spouse defaults)
     _contributors.addAll([
       OnboardingContributorEntry(
         id: 'self',
-        nameController: TextEditingController(text: _selectedLang == 'ar' ? 'أنا' : 'Self'),
+        nameController: TextEditingController(text: _selectedLang == 'ar' ? 'الدخل الأساسي' : 'Primary Income'),
         incomeController: TextEditingController(text: '20000'),
         role: 'self',
         color: AppTheme.primaryTeal,
-        icon: Icons.person_rounded,
+        icon: Icons.account_balance_wallet_rounded,
         isPrimary: true,
-      ),
-      OnboardingContributorEntry(
-        id: 'spouse',
-        nameController: TextEditingController(text: _selectedLang == 'ar' ? 'الزوج / الزوجة' : 'Spouse'),
-        incomeController: TextEditingController(text: '0'),
-        role: 'spouse',
-        color: AppTheme.accentGold,
-        icon: Icons.favorite_rounded,
-        isPrimary: false,
       ),
     ]);
 
@@ -205,24 +201,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     setState(() {
       _selectedLang = newLang;
       if (newLang == 'en') {
-        if (_householdNameController.text == 'عائلتنا') {
-          _householdNameController.text = 'Our Household';
+        if (_householdNameController.text == 'محفظتي المالية' || _householdNameController.text == 'عائلتنا') {
+          _householdNameController.text = 'My Finances';
         }
-        if (_contributors.isNotEmpty && _contributors[0].nameController.text == 'أنا') {
-          _contributors[0].nameController.text = 'Self';
-        }
-        if (_contributors.length > 1 && _contributors[1].nameController.text == 'الزوج / الزوجة') {
-          _contributors[1].nameController.text = 'Spouse';
+        if (_contributors.isNotEmpty &&
+            (_contributors[0].nameController.text == 'الدخل الأساسي' || _contributors[0].nameController.text == 'أنا')) {
+          _contributors[0].nameController.text = 'Primary Income';
         }
       } else {
-        if (_householdNameController.text == 'Our Household') {
-          _householdNameController.text = 'عائلتنا';
+        if (_householdNameController.text == 'My Finances' || _householdNameController.text == 'Our Household') {
+          _householdNameController.text = 'محفظتي المالية';
         }
-        if (_contributors.isNotEmpty && _contributors[0].nameController.text == 'Self') {
-          _contributors[0].nameController.text = 'أنا';
-        }
-        if (_contributors.length > 1 && _contributors[1].nameController.text == 'Spouse') {
-          _contributors[1].nameController.text = 'الزوج / الزوجة';
+        if (_contributors.isNotEmpty &&
+            (_contributors[0].nameController.text == 'Primary Income' || _contributors[0].nameController.text == 'Self')) {
+          _contributors[0].nameController.text = 'الدخل الأساسي';
         }
       }
     });
@@ -355,7 +347,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       currencyCode: _selectedCurrencyCode,
       currencySymbol: _selectedCurrencySymbol,
       householdName: _householdNameController.text.trim().isEmpty
-          ? (_selectedLang == 'ar' ? 'عائلتنا' : 'Our Household')
+          ? (_selectedLang == 'ar' ? 'محفظتي المالية' : 'My Finances')
           : _householdNameController.text.trim(),
       primaryMemberName: contributorsData.first['name'] as String,
       secondaryMemberName: contributorsData.length > 1 ? (contributorsData[1]['name'] as String) : null,
@@ -365,6 +357,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       selectedSubscriptions: selectedSubs,
       contributorsData: contributorsData,
     );
+
+    if (!mounted) return;
+
+    // High-converting 7-Day Free Trial Paywall (with soft skip for low-friction entry)
+    await PaywallScreen.show(context, trigger: 'onboarding_completion');
 
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
@@ -546,15 +543,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            isArabic ? 'التقييم المالي لأسرة أهل' : 'Ahl Family Financial Assessment',
+            isArabic ? 'التقييم المالي الشخصي — مالي' : 'Personal Financial Assessment — Mali',
             style: AppTheme.editorialHeading(fontSize: 22, lang: _selectedLang),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 6),
           Text(
             isArabic
-                ? 'لنبدأ بتحديد لغتك، عملتك الخليجية، واسم عائلتك الكريمة.'
-                : 'Let us start by setting your language, GCC currency, and family name.',
+                ? 'لنبدأ بتحديد لغتك، عملتك الخليجية، وتسمية محفظتك المالية.'
+                : 'Let us start by setting your language, GCC currency, and wallet name.',
             style: AppTheme.body(fontSize: 13, color: AppTheme.inkSecondary, lang: _selectedLang),
             textAlign: TextAlign.center,
           ),
@@ -582,20 +579,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         color: isArabic ? AppTheme.primaryTeal : AppTheme.surfaceBorder,
                       ),
                     ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      'العربية',
-                      style: AppTheme.body(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: isArabic ? Colors.white : AppTheme.inkPrimary,
-                        lang: 'ar',
+                    child: Center(
+                      child: Text(
+                        'العربية',
+                        style: AppTheme.body(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: isArabic ? Colors.white : AppTheme.inkPrimary,
+                          lang: 'ar',
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 12),
               Expanded(
                 child: InkWell(
                   onTap: () => _switchLanguage('en'),
@@ -610,14 +608,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         color: !isArabic ? AppTheme.primaryTeal : AppTheme.surfaceBorder,
                       ),
                     ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      'English',
-                      style: AppTheme.body(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: !isArabic ? Colors.white : AppTheme.inkPrimary,
-                        lang: 'en',
+                    child: Center(
+                      child: Text(
+                        'English',
+                        style: AppTheme.body(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: !isArabic ? Colors.white : AppTheme.inkPrimary,
+                          lang: 'en',
+                        ),
                       ),
                     ),
                   ),
@@ -628,9 +627,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
           const SizedBox(height: 18),
 
-          // Currency Chips
+          // Currency Selection
           Text(
-            isArabic ? 'العملة الخليجية' : 'GCC Currency',
+            isArabic ? 'العملة الأساسية' : 'Primary Currency',
             style: AppTheme.label(fontSize: 12, color: AppTheme.inkSecondary, lang: _selectedLang),
           ),
           const SizedBox(height: 8),
@@ -639,7 +638,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             runSpacing: 8,
             children: _gccCurrencies.map((c) {
               final isSelected = _selectedCurrencyCode == c['code'];
-              final country = isArabic ? c['countryAr']! : c['countryEn']!;
+              final country = isArabic ? c['countryAr'] : c['countryEn'];
               return InkWell(
                 onTap: () {
                   setState(() {
@@ -682,9 +681,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
           const SizedBox(height: 18),
 
-          // Household Name
+          // Wallet / Account Name
           Text(
-            isArabic ? 'اسم الأسرة' : 'Household Name',
+            isArabic ? 'اسم المحفظة أو الحساب' : 'Wallet / Account Name',
             style: AppTheme.label(fontSize: 12, color: AppTheme.inkSecondary, lang: _selectedLang),
           ),
           const SizedBox(height: 6),
@@ -694,8 +693,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             decoration: InputDecoration(
               filled: true,
               fillColor: AppTheme.surfaceCard,
-              hintText: isArabic ? 'مثال: عائلتنا، أسرة آل ثاني' : 'e.g. Our Household',
-              prefixIcon: const Icon(Icons.home_rounded, color: AppTheme.primaryTeal),
+              hintText: isArabic ? 'مثال: محفظتي المالية، حسابي الشخصي' : 'e.g. My Finances, Personal Wallet',
+              prefixIcon: const Icon(Icons.account_balance_wallet_rounded, color: AppTheme.primaryTeal),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
                 borderSide: const BorderSide(color: AppTheme.surfaceBorder),
@@ -712,7 +711,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   // ==========================================
-  // --- STEP 2: HOUSEHOLD INFLOWS (INCOME) ---
+  // --- STEP 2: MONTHLY INFLOWS (INCOME) ---
   // ==========================================
   Widget _buildStep2HouseholdInflows(bool isArabic) {
     final currency = isArabic ? _selectedCurrencySymbol : _selectedCurrencyCode;
@@ -724,15 +723,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         children: [
           const SizedBox(height: 8),
           Text(
-            isArabic ? 'المساهمون والدخل الشهري' : 'Household Contributors & Inflows',
+            isArabic ? 'الدخل الشهري ومصادر السيولة' : 'Monthly Income & Inflows',
             style: AppTheme.editorialHeading(fontSize: 22, lang: _selectedLang),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 6),
           Text(
             isArabic
-                ? 'أضف أفراد الأسرة المساهمين ورواتبهم الشهرية، وسيقوم التطبيق بحساب إجمالي دخل البيت تلقائياً.'
-                : 'Add each contributing member and their salary. The app sums your family budget ceiling automatically.',
+                ? 'أدخل راتبك الأساسي. يمكنك أيضاً إضافة مصادر دخل إضافية أو مساهمين بالأسرة.'
+                : 'Enter your primary monthly income. Add extra income streams or contributors if you share finances.',
             style: AppTheme.body(fontSize: 13, color: AppTheme.inkSecondary, lang: _selectedLang),
             textAlign: TextAlign.center,
           ),
@@ -752,7 +751,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             onPressed: _addContributor,
             icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
             label: Text(
-              isArabic ? 'إضافة مساهم مالي آخر للأسرة' : '+ Add Another Contributor',
+              isArabic ? '+ إضافة مصدر دخل أو مساهم آخر' : '+ Add Income Source or Contributor',
               style: AppTheme.body(
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
@@ -785,7 +784,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      isArabic ? 'إجمالي دخل الأسرة الشهري:' : 'Total Household Inflow:',
+                      isArabic ? 'إجمالي الدخل الشهري المتاح:' : 'Total Monthly Inflow:',
                       style: AppTheme.body(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
@@ -813,8 +812,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   alignment: isArabic ? Alignment.centerRight : Alignment.centerLeft,
                   child: Text(
                     isArabic
-                        ? '⚡ محسوب تلقائياً من رواتب ${_contributors.length} أفراد مساهمين دون الحاجة لأي جمع ذهني.'
-                        : '⚡ Auto-summed from ${_contributors.length} contributor(s) — zero mental math needed.',
+                        ? '⚡ محسوب تلقائياً من ${_contributors.length} مصادر دخل أو مساهمين دون أي جمع ذهني.'
+                        : '⚡ Auto-summed from ${_contributors.length} income source(s) — zero mental math needed.',
                     style: AppTheme.body(fontSize: 11, color: AppTheme.primaryTeal, lang: _selectedLang),
                   ),
                 ),

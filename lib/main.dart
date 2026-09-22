@@ -42,11 +42,11 @@ void main() async {
   // Initialize Paywall and RevenueCat configurations
   await PaywallService().init();
 
-  runApp(const AhlApp());
+  runApp(const MaliApp());
 }
 
-class AhlApp extends StatelessWidget {
-  const AhlApp({super.key});
+class MaliApp extends StatelessWidget {
+  const MaliApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -61,8 +61,8 @@ class AhlApp extends StatelessWidget {
         final isArabic = lang == 'ar';
 
         return MaterialApp(
-          key: ValueKey('ahl_app_$lang'),
-          title: isArabic ? 'أهل - ميزانية الأسرة والزكاة' : 'Ahl - Family Finance & Zakat',
+          key: ValueKey('mali_app_$lang'),
+          title: isArabic ? 'مالي — إدارة الأموال والزكاة' : 'Mali — Personal Wealth & Zakat',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.theme,
           locale: Locale(lang),
@@ -92,3 +92,6 @@ class AhlApp extends StatelessWidget {
     );
   }
 }
+
+// Backward compatibility alias for tests
+typedef AhlApp = MaliApp;

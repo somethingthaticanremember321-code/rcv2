@@ -81,7 +81,7 @@ class ExportService {
     final currency = household.currencySymbol;
 
     if (isArabic) {
-      buffer.writeln('=== تقرير حساب الزكاة الشرعي — تطبيق أهل ===');
+      buffer.writeln('=== تقرير حساب الزكاة الشرعي — تطبيق مالي ===');
       buffer.writeln('تاريخ التقرير,"${dateFormat.format(DateTime.now())}"');
       buffer.writeln('فترة الوجوب,"$obligationPeriod"');
       buffer.writeln('معيار النصاب,"${summary.nisabStandard == 'gold' ? 'ذهب (٨٥ غرام عيار ٢٤)' : 'فضة (٥٩٥ غرام)'}"');
@@ -121,7 +121,7 @@ class ExportService {
         );
       }
     } else {
-      buffer.writeln('=== Shariah Zakat Audit Report — Ahl App ===');
+      buffer.writeln('=== Shariah Zakat Audit Report — Mali App ===');
       buffer.writeln('Report Date,"${dateFormat.format(DateTime.now())}"');
       buffer.writeln('Obligation Period,"$obligationPeriod"');
       buffer.writeln('Nisab Standard,"${summary.nisabStandard == 'gold' ? 'Gold (85g 24K)' : 'Silver (595g)'}"');

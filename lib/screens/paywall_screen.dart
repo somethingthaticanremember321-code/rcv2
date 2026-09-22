@@ -87,8 +87,8 @@ class _PaywallScreenState extends State<PaywallScreen> {
         SnackBar(
           content: Text(
             isArabic
-                ? 'تم الاشتراك بنجاح! أهلاً بك في أهل برو 🎉'
-                : 'Subscribed successfully! Welcome to Ahl Pro 🎉',
+                ? 'تم الاشتراك بنجاح! أهلاً بك في مالي برو 🎉'
+                : 'Subscribed successfully! Welcome to Mali Pro 🎉',
           ),
           backgroundColor: AppTheme.primaryTeal,
         ),
@@ -175,7 +175,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
+                    Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: AppTheme.accentGoldLight,
@@ -188,7 +188,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                         const Icon(Icons.workspace_premium_rounded, size: 16, color: AppTheme.accentGold),
                         const SizedBox(width: 6),
                         Text(
-                          isArabic ? 'أهل برو' : 'AHL PRO',
+                          isArabic ? 'مالي برو' : 'MALI PRO',
                           style: AppTheme.body(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
@@ -215,8 +215,8 @@ class _PaywallScreenState extends State<PaywallScreen> {
                   // Headline & Hero
                   Text(
                     isArabic
-                        ? 'طمأنينة واستقرار مالي لأسرتك'
-                        : 'Quiet Financial Clarity for Your Family',
+                        ? 'سيادة مالية ووضوح تام لمستقبلك'
+                        : 'Complete Financial Sovereignty & Clarity',
                     style: AppTheme.editorialHeading(
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
@@ -226,8 +226,8 @@ class _PaywallScreenState extends State<PaywallScreen> {
                   const SizedBox(height: 6),
                   Text(
                     isArabic
-                        ? 'افتح كامل ميزات التطبيق المتقدمة لجميع أفراد الأسرة دون أي قيود، وبخصوصية مطلقة بدون ربط بنكي.'
-                        : 'Unlock unlimited contributors, seasonal multipliers, and comprehensive Shariah Zakat tools with 100% offline-first privacy.',
+                        ? 'افتح كامل الميزات المتقدمة، تتبع الاشتراكات غير المحدودة، وحساب الزكاة الدقيق بخصوصية محلية ١٠٠٪.'
+                        : 'Unlock all premium features, unlimited subscription tracking, and precise Zakat with 100% offline-first privacy.',
                     style: AppTheme.bodyMedium(
                       fontSize: 13,
                       color: AppTheme.inkSecondary,
@@ -239,11 +239,11 @@ class _PaywallScreenState extends State<PaywallScreen> {
 
                   // Feature Matrix
                   _buildFeatureItem(
-                    icon: Icons.people_alt_rounded,
-                    title: isArabic ? 'أفراد أسرة ومساهمين غير محدودين' : 'Unlimited Family Contributors',
+                    icon: Icons.account_balance_wallet_rounded,
+                    title: isArabic ? 'مصادر دخل ومساهمين غير محدودين' : 'Unlimited Incomes & Contributors',
                     subtitle: isArabic
-                        ? 'أضف الزوج، الزوجة، الأبناء، والعمالة المنزلية لتتبع مساهمات ونفقات كل فرد بوضوح.'
-                        : 'Track spouse, children, and household staff with bespoke color tags & percentage shares.',
+                        ? 'تتبع راتبك، مصادر دخلك الجانبية، ومساهمات الأسرة أو الشركاء بلا أي سقف.'
+                        : 'Track primary salary, side incomes, freelancing, and family contributors without limits.',
                     lang: lang,
                   ),
                   _buildFeatureItem(
@@ -348,14 +348,70 @@ class _PaywallScreenState extends State<PaywallScreen> {
                       }).toList(),
                     ),
 
-                  const SizedBox(height: 12),
+                  // 7-Day Free Trial Timeline (Shown when trial plan selected)
+                  if (_selectedPlan?.hasTrial ?? false) ...[
+                    Container(
+                      margin: const EdgeInsets.only(top: 8, bottom: 12),
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryTealLight.withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: AppTheme.primaryTeal.withValues(alpha: 0.2)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.shield_outlined, size: 16, color: AppTheme.primaryTeal),
+                              const SizedBox(width: 6),
+                              Text(
+                                isArabic ? 'كيف تعمل التجربة المجانية (٧ أيام):' : 'How your 7-day free trial works:',
+                                style: AppTheme.body(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.primaryTealDark,
+                                  lang: lang,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          _buildTimelineStep(
+                            step: '1',
+                            title: isArabic ? 'اليوم: وصول فوري لكامل الميزات' : 'Today: Instant full Pro access',
+                            desc: isArabic ? 'لن تدفع أي هللة اليوم (\$0.00).' : 'You are charged \$0.00 today.',
+                            isArabic: isArabic,
+                            lang: lang,
+                          ),
+                          _buildTimelineStep(
+                            step: '2',
+                            title: isArabic ? 'اليوم ٥: إشعار تذكيري مسبق' : 'Day 5: Trial reminder heads-up',
+                            desc: isArabic ? 'تذكير شفاف قبل انتهاء فترة التجربة.' : 'A reminder before your trial ends.',
+                            isArabic: isArabic,
+                            lang: lang,
+                          ),
+                          _buildTimelineStep(
+                            step: '3',
+                            title: isArabic ? 'اليوم ٧: يبدأ الاشتراك السنوي' : 'Day 7: Annual membership begins',
+                            desc: isArabic
+                                ? 'يمكنك الإلغاء بأي لحظة قبل اليوم ٧ من إعدادات المتجر بلا أي رسوم.'
+                                : 'Cancel anytime before Day 7 in Google Play and pay nothing.',
+                            isArabic: isArabic,
+                            lang: lang,
+                            isLast: true,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
 
                   // Store Reassurance
                   Center(
                     child: Text(
                       isArabic
-                          ? '🔒 تجديد تلقائي، ويمكنك الإلغاء في أي وقت من إعدادات المتجر.'
-                          : '🔒 Auto-renews, cancel anytime in store settings.',
+                          ? '🔒 تجديد آمن عبر المتجر، وإلغاء فوري بضغطة واحدة بأي وقت.'
+                          : '🔒 Secure store billing, cancel anytime with 1 tap.',
                       style: AppTheme.bodyMedium(
                         fontSize: 11,
                         color: AppTheme.inkMuted,
@@ -364,7 +420,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
 
                   // Primary CTA Button
                   ElevatedButton(
@@ -397,7 +453,23 @@ class _PaywallScreenState extends State<PaywallScreen> {
                           ),
                   ),
 
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 6),
+
+                  // Soft Skip Button (Keeps user in app on Free tier)
+                  Center(
+                    child: TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: Text(
+                        isArabic ? 'المتابعة بالباقة المجانية' : 'Continue with Free Version',
+                        style: AppTheme.body(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.inkSecondary,
+                          lang: lang,
+                        ),
+                      ),
+                    ),
+                  ),
 
                   // Secondary Action: Restore Purchases
                   Center(
@@ -406,9 +478,9 @@ class _PaywallScreenState extends State<PaywallScreen> {
                       child: Text(
                         isArabic ? 'استعادة المشتريات السابقة' : 'Restore Previous Purchases',
                         style: AppTheme.body(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.inkSecondary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: AppTheme.inkMuted,
                           lang: lang,
                         ),
                       ),
@@ -454,12 +526,85 @@ class _PaywallScreenState extends State<PaywallScreen> {
 
   String _getButtonText(bool isArabic) {
     if (_paywallService.isProUser) {
-      return isArabic ? 'أهل برو مفعّل — متابعة' : 'Pro Active — Continue';
+      return isArabic ? 'مالي برو مفعّل — متابعة' : 'Mali Pro Active — Continue';
+    }
+    if (_selectedPlan?.isLifetime ?? false) {
+      return isArabic ? 'امتلك مالي مدى الحياة' : 'Get Mali Lifetime Access';
     }
     if (_selectedPlan?.hasTrial ?? false) {
-      return isArabic ? 'ابدأ التجربة المجانية لمدة ٧ أيام' : 'Start 7-Day Free Trial';
+      return isArabic ? 'ابدأ التجربة المجانية (٧ أيام مجاناً)' : 'Start 7-Day Free Trial';
     }
-    return isArabic ? 'الاشتراك في أهل برو' : 'Subscribe to Ahl Pro';
+    return isArabic ? 'الاشتراك في مالي برو' : 'Subscribe to Mali Pro';
+  }
+
+  Widget _buildTimelineStep({
+    required String step,
+    required String title,
+    required String desc,
+    required bool isArabic,
+    required String lang,
+    bool isLast = false,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Column(
+          children: [
+            Container(
+              width: 20,
+              height: 20,
+              decoration: const BoxDecoration(
+                color: AppTheme.primaryTeal,
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                step,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            if (!isLast)
+              Container(
+                width: 2,
+                height: 24,
+                color: AppTheme.primaryTeal.withValues(alpha: 0.25),
+              ),
+          ],
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(bottom: isLast ? 0 : 6),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTheme.body(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.inkPrimary,
+                    lang: lang,
+                  ),
+                ),
+                Text(
+                  desc,
+                  style: AppTheme.body(
+                    fontSize: 11,
+                    color: AppTheme.inkSecondary,
+                    lang: lang,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildFeatureItem({

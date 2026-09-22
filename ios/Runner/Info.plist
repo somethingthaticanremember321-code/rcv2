@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Ahl</string>
+	<string>Mali</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>Ahl</string>
+	<string>Mali</string>
 	<key>com.posthog.posthog.API_KEY</key>
 	<string>phc_CfnjTMP3ZUUP4gBjC6o7LgULB5AbssASQYxNDEHtnm82</string>
 	<key>com.posthog.posthog.POSTHOG_HOST</key>
@@ -23,9 +23,9 @@
 	<key>com.posthog.posthog.TRACK_APPLICATION_LIFECYCLE_EVENTS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Ahl needs access to your camera to attach photos to transactions.</string>
+	<string>Mali needs access to your camera to attach photos to transactions.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Ahl needs access to your photo library to attach transaction attachments.</string>
+	<string>Mali needs access to your photo library to attach transaction attachments.</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

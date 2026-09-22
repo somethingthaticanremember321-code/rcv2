@@ -121,12 +121,12 @@ class _ZakatTrackerScreenState extends State<ZakatTrackerScreen> {
     );
 
     final cleanPeriod = _selectedPeriod.replaceAll(' ', '_');
-    final filename = 'ahl_zakat_report_${cleanPeriod}_${DateFormat('yyyyMMdd').format(DateTime.now())}.csv';
+    final filename = 'mali_zakat_report_${cleanPeriod}_${DateFormat('yyyyMMdd').format(DateTime.now())}.csv';
     await ExportService().shareCsv(
       csvContent: csv,
       filename: filename,
       subject: isArabic
-          ? 'تقرير حساب الزكاة الشرعي لأسرة ${_household.name}'
+          ? 'تقرير حساب الزكاة الشرعي لـ ${_household.name}'
           : '${_household.name} Shariah Zakat Report',
     );
   }

@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ahl (أهل) — Sovereign Family Wealth & Budgeting App for GCC</title>
-  <meta name="description" content="Ahl is the premier sovereign personal finance app for GCC households. Multi-contributor income tracking, 117+ subscription radar, Ramadan & Eid seasonal budgets, and automated Zakat. 100% Local-First & Zero-Cloud.">
-  <meta name="keywords" content="Ahl, family budgeting, GCC personal finance, subscription tracker, Saudi budget app, UAE personal finance, Zakat calculator, local-first budget">
+  <title>Mali (مالي) — Sovereign Personal & Household Wealth for GCC</title>
+  <meta name="description" content="Mali is the premier sovereign personal and household wealth app for GCC residents. Multi-income tracking, 117+ subscription radar, Ramadan & Eid seasonal budgets, and automated Zakat. 100% Local-First & Zero-Cloud.">
+  <meta name="keywords" content="Mali, personal finance, GCC budgeting, subscription tracker, Saudi budget app, UAE personal finance, Zakat calculator, local-first budget">
   
   <!-- OpenGraph / Social Meta Tags -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Ahl — Sovereign Family Budgeting App">
-  <meta property="og:description" content="Local-first family finance, multi-contributor salaries, 117+ subscription tracker, and Ramadan/Eid seasonal budgeting. Download on Google Play.">
+  <meta property="og:title" content="Mali — Sovereign Personal & Household Wealth App">
+  <meta property="og:description" content="Local-first personal and family finance, multi-income salaries, 117+ subscription tracker, and Ramadan/Eid seasonal budgeting. Download on Google Play.">
   <meta property="og:image" content="icon.png">
   
   <link rel="icon" type="image/png" href="icon.png">
@@ -557,7 +557,7 @@
       line-height: 1.6;
     }
 
-    /* Trust / Why Ahl */
+    /* Trust / Why Mali */
     .trust-banner {
       background: var(--primary-teal-surface);
       border: 1.5px solid rgba(15, 110, 86, 0.2);
@@ -750,10 +750,153 @@
       gap: 16px;
     }
 
+
+    /* Pricing Section */
+    .pricing-section {
+      padding: 90px 0 100px;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+      align-items: stretch;
+      margin-top: 50px;
+    }
+
+    .pricing-card {
+      background: var(--surface-card);
+      border: 1.5px solid var(--surface-border);
+      border-radius: var(--radius-xl);
+      padding: 38px 28px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: all 0.25s ease;
+    }
+
+    .pricing-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .pricing-card.featured {
+      border-color: var(--primary-teal);
+      background: linear-gradient(180deg, #FFFFFF 0%, var(--primary-teal-surface) 100%);
+      box-shadow: var(--shadow-md);
+    }
+
+    .pricing-badge {
+      position: absolute;
+      top: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--accent-gold);
+      color: #FFFFFF;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 5px 14px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .pricing-badge.teal {
+      background: var(--primary-teal);
+    }
+
+    .pricing-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--ink-primary);
+      margin-bottom: 8px;
+    }
+
+    .pricing-desc {
+      font-size: 14px;
+      color: var(--ink-secondary);
+      margin-bottom: 20px;
+      min-height: 42px;
+    }
+
+    .pricing-price-wrap {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+
+    .pricing-price {
+      font-size: 38px;
+      font-weight: 800;
+      color: var(--primary-teal-dark);
+      letter-spacing: -1px;
+    }
+
+    .pricing-period {
+      font-size: 15px;
+      color: var(--ink-muted);
+      font-weight: 600;
+    }
+
+    .pricing-sar-alt {
+      font-size: 13px;
+      color: var(--accent-gold-dark);
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+
+    .trial-timeline-box {
+      background: #FFFFFF;
+      border: 1px dashed rgba(15, 110, 86, 0.25);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 20px;
+      font-size: 12px;
+      color: var(--ink-secondary);
+    }
+
+    .trial-timeline-box .timeline-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+
+    .trial-timeline-box .timeline-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .pricing-features {
+      list-style: none;
+      margin-top: auto;
+      padding-top: 20px;
+      border-top: 1px solid var(--surface-border-light);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .pricing-features li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      color: var(--ink-primary);
+    }
+
+    .pricing-features li span.check {
+      color: var(--primary-teal);
+      font-weight: 800;
+      font-size: 14px;
+    }
+
     /* Responsive */
     @media (max-width: 980px) {
       .hero h1 { font-size: 38px; }
       .features-grid { grid-template-columns: 1fr; }
+      .pricing-grid { grid-template-columns: 1fr; }
       .steps-grid { grid-template-columns: 1fr; }
       .trust-banner { grid-template-columns: 1fr; padding: 32px; }
       .mockup-grid { grid-template-columns: 1fr; }
@@ -767,13 +910,14 @@
   <header>
     <div class="container nav-wrapper">
       <a href="index.html" class="brand">
-        <img src="icon.png" alt="Ahl Logo" class="brand-img">
-        <span>Ahl <span class="brand-title-ar">أهل</span></span>
+        <img src="icon.png" alt="Mali Logo" class="brand-img">
+        <span>Mali <span class="brand-title-ar">مالي</span></span>
       </a>
       <ul class="nav-links">
         <li><a href="#features">Features</a></li>
+        <li><a href="#pricing">Pricing</a></li>
         <li><a href="#how-it-works">How It Works</a></li>
-        <li><a href="#trust">Why Ahl</a></li>
+        <li><a href="#trust">Why Mali</a></li>
         <li><a href="#faq">FAQ</a></li>
         <li><a href="privacy.html">Privacy Policy</a></li>
         <li><a href="terms.html">Terms of Service</a></li>
@@ -792,10 +936,10 @@
         100% Local-First Privacy • Zero Cloud Storage • No Bank Logins
       </div>
       <h1>
-        Sovereign Family Wealth & Budgeting for <span class="gold">GCC Households</span>
+        Sovereign Personal Wealth & Financial Clarity for <span class="gold">GCC Residents</span>
       </h1>
       <p class="lead">
-        Unify multi-contributor family salaries with zero mental math, uncover forgotten recurring fees across 117+ regional subscriptions, navigate Ramadan and Eid seasonal expenses, and calculate exact Zakat — safely stored on your device only.
+        Track personal finances and multi-income streams with zero mental math, uncover forgotten recurring leaks across 117+ regional subscriptions, navigate Ramadan and Eid seasonal expenses, and calculate exact Zakat — safely stored on your device only.
       </p>
 
       <div class="hero-actions">
@@ -820,7 +964,7 @@
       <div class="hero-proof">
         <div class="hero-proof-item">⭐ 4.9 Rating</div>
         <div class="hero-proof-item">🔒 Zero Bank Credentials Required</div>
-        <div class="hero-proof-item">🕌 Tailored for Saudi Arabia & GCC Families</div>
+        <div class="hero-proof-item">🕌 Tailored for Saudi Arabia & the GCC</div>
         <div class="hero-proof-item">⚡ 100% Offline Capable</div>
       </div>
 
@@ -828,8 +972,8 @@
       <div class="app-preview-wrapper" id="preview">
         <div class="mockup-header">
           <div style="display:flex; align-items:center; gap:10px;">
-            <img src="icon.png" alt="Ahl App" style="width:28px; height:28px; border-radius:8px;">
-            <strong style="color:var(--primary-teal-dark); font-size:15px;">Ahl Dashboard • Family Sanctuary</strong>
+            <img src="icon.png" alt="Mali App" style="width:28px; height:28px; border-radius:8px;">
+            <strong style="color:var(--primary-teal-dark); font-size:15px;">Mali Dashboard • Financial Sanctuary</strong>
           </div>
           <span class="mockup-badge">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
@@ -840,17 +984,17 @@
         <div class="mockup-grid">
           <!-- Left: Inflow & Contributors -->
           <div class="mockup-card">
-            <div class="mockup-card-title">Family Inflow (Automatic Summation)</div>
+            <div class="mockup-card-title">Monthly Cash Inflow (Zero Mental Math)</div>
             <div class="mockup-metric">26,500 <span style="font-size:16px; color:var(--ink-muted); font-weight:600;">SAR / month</span></div>
-            <div class="mockup-sub">Zero mental math • 2 Contributors active</div>
+            <div class="mockup-sub">Zero mental math • 2 Income streams active</div>
             <div class="contributor-chips">
               <div class="contributor-chip">
                 <span class="chip-dot" style="background:#0F6E56;"></span>
-                <span>Self: 18,000 SAR</span>
+                <span>Primary Income: 18,000 SAR</span>
               </div>
               <div class="contributor-chip">
                 <span class="chip-dot" style="background:#C9962C;"></span>
-                <span>Spouse: 8,500 SAR</span>
+                <span>Secondary / Partner: 8,500 SAR</span>
               </div>
             </div>
             
@@ -898,8 +1042,8 @@
   <section id="features" class="container">
     <div class="section-title">
       <div class="section-subtitle-tag">Sovereign Financial Freedom</div>
-      <h2>Designed for How Families Actually Live in the GCC</h2>
-      <p>Traditional western budgeting apps force you to hand over bank passwords or manage solo budgets. Ahl respects your privacy, your family structure, and your cultural seasons.</p>
+      <h2>Designed for Real Life in the GCC</h2>
+      <p>Traditional western budgeting apps force you to hand over bank passwords or struggle with clumsy cloud sync. Mali respects your privacy, adapts to solo or multi-income households, and embraces your cultural seasons.</p>
     </div>
 
     <div class="features-grid">
@@ -913,8 +1057,8 @@
       <!-- Feature 2 -->
       <div class="feature-card">
         <div class="feature-icon-box">👥</div>
-        <h3>Multi-Contributor Income (No Mental Math)</h3>
-        <p>Add everyone who brings income into the home — Self, Spouse, or working adult children. Ahl automatically sums household inflow and recalculates your budget ceiling in real time.</p>
+        <h3>Multi-Income Streams (No Mental Math)</h3>
+        <p>Manage your primary salary, freelance projects, or combine incomes with a partner. Mali automatically sums your cash inflow and recalculates your spending ceiling in real time.</p>
       </div>
 
       <!-- Feature 3 -->
@@ -947,20 +1091,105 @@
     </div>
   </section>
 
+
+  <!-- Transparent Pricing Section -->
+  <section id="pricing" class="container pricing-section">
+    <div class="section-title">
+      <div class="section-subtitle-tag">Fair & Transparent Pricing</div>
+      <h2>Simple, Accessible Wealth Management</h2>
+      <p>Choose the plan that matches your financial journey. Every Pro plan includes the 117+ Subscription Radar, multi-income tracking, seasonal budgets, and Shariah Zakat reports.</p>
+    </div>
+
+    <div class="pricing-grid">
+      <!-- Monthly Pro -->
+      <div class="pricing-card">
+        <div class="pricing-title">Monthly Pro</div>
+        <div class="pricing-desc">Maximum flexibility. Impulse-friendly coffee price with no long-term lock-in.</div>
+        <div class="pricing-price-wrap">
+          <span class="pricing-price">$3.99</span>
+          <span class="pricing-period">/ month</span>
+        </div>
+        <div class="pricing-sar-alt">Equivalent to 14.99 SAR / month</div>
+        <ul class="pricing-features">
+          <li><span class="check">✓</span> Unlimited income sources & contributors</li>
+          <li><span class="check">✓</span> Full 117+ Subscription Radar</li>
+          <li><span class="check">✓</span> Ramadan & Eid seasonal budget planner</li>
+          <li><span class="check">✓</span> Automated Shariah Zakat & Nisab engine</li>
+          <li><span class="check">✓</span> Audit-ready Excel & CSV data exports</li>
+          <li><span class="check">✓</span> 100% Local-first encrypted privacy</li>
+        </ul>
+        <a href="https://play.google.com/store/apps/details?id=com.zyad.lockin" target="_blank" rel="noopener noreferrer" class="btn btn-outline" style="width:100%; text-align:center;">
+          Start Monthly Pro
+        </a>
+      </div>
+
+      <!-- Annual Pro (Featured + 7-Day Free Trial) -->
+      <div class="pricing-card featured">
+        <div class="pricing-badge">⭐ Most Popular • Save 58%</div>
+        <div class="pricing-title">Annual Pro</div>
+        <div class="pricing-desc">Full access with an unconditional 7-Day Free Trial. Only ~6.6 SAR/month.</div>
+        <div class="pricing-price-wrap">
+          <span class="pricing-price">$19.99</span>
+          <span class="pricing-period">/ year</span>
+        </div>
+        <div class="pricing-sar-alt">Equivalent to 79.99 SAR / year (Save 58%)</div>
+        
+        <div class="trial-timeline-box">
+          <div class="timeline-row"><strong>Day 0:</strong> <span>Instant full Pro access (Free)</span></div>
+          <div class="timeline-row"><strong>Day 5:</strong> <span>Friendly reminder notification</span></div>
+          <div class="timeline-row"><strong>Day 7:</strong> <span>Annual plan renews (Cancel anytime)</span></div>
+        </div>
+
+        <ul class="pricing-features">
+          <li><span class="check">✓</span> <strong>7-Day Free Trial</strong> included</li>
+          <li><span class="check">✓</span> All Pro features & unlimited tracking</li>
+          <li><span class="check">✓</span> Best annual value (58% savings)</li>
+          <li><span class="check">✓</span> Priority local database encryption</li>
+          <li><span class="check">✓</span> 1-Tap Google Play cancellation</li>
+        </ul>
+        <a href="https://play.google.com/store/apps/details?id=com.zyad.lockin" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="width:100%; text-align:center;">
+          Claim 7-Day Free Trial
+        </a>
+      </div>
+
+      <!-- Lifetime Founder's Pass -->
+      <div class="pricing-card">
+        <div class="pricing-badge teal">👑 Founder's Deal</div>
+        <div class="pricing-title">Founder's Lifetime</div>
+        <div class="pricing-desc">Pay once, own forever. Zero recurring fees or renewals for life.</div>
+        <div class="pricing-price-wrap">
+          <span class="pricing-price">$39.99</span>
+          <span class="pricing-period">one-time</span>
+        </div>
+        <div class="pricing-sar-alt">Equivalent to 149.99 SAR (Never pay again)</div>
+        <ul class="pricing-features">
+          <li><span class="check">✓</span> <strong>Lifetime ownership</strong> with zero renewals</li>
+          <li><span class="check">✓</span> All current and future Mali Pro features</li>
+          <li><span class="check">✓</span> All upcoming seasonal calendars</li>
+          <li><span class="check">✓</span> Permanent local export & backup sovereignty</li>
+          <li><span class="check">✓</span> Exclusive Founder status in Mali</li>
+        </ul>
+        <a href="https://play.google.com/store/apps/details?id=com.zyad.lockin" target="_blank" rel="noopener noreferrer" class="btn btn-outline" style="width:100%; text-align:center;">
+          Get Lifetime Access
+        </a>
+      </div>
+    </div>
+  </section>
+
   <!-- How It Works Section -->
   <section id="how-it-works" class="workflow-section">
     <div class="container">
       <div class="section-title" style="margin-top:0;">
         <div class="section-subtitle-tag">Fast & Simple</div>
         <h2>Up and Running in Under 2 Minutes</h2>
-        <p>No tedious bank account linking or email verifications. Open Ahl, configure your household, and get instant clarity.</p>
+        <p>No tedious bank account linking or email verifications. Open Mali, set up your finances in seconds, and get instant clarity.</p>
       </div>
 
       <div class="steps-grid">
         <div class="step-card">
           <div class="step-number">1</div>
-          <h4>Add Household Contributors</h4>
-          <p>Enter who contributes to the home (Self, Spouse, Children) and their salaries. Ahl instantly calculates your household's total inflow with zero mental math.</p>
+          <h4>Add Your Incomes</h4>
+          <p>Enter your primary income or include additional sources and contributors. Mali instantly calculates your total cash flow with zero mental math.</p>
         </div>
 
         <div class="step-card">
@@ -978,12 +1207,12 @@
     </div>
   </section>
 
-  <!-- Trust / Why Ahl -->
+  <!-- Trust / Why Mali -->
   <section id="trust" class="container">
     <div class="trust-banner">
       <div>
         <h3>Built from the Ground Up for Complete Financial Sovereignty</h3>
-        <p>Unlike modern apps that sell your spending habits to credit agencies or advertisers, Ahl was built with one guiding principle: your money and family data are strictly private.</p>
+        <p>Unlike modern apps that sell your spending habits to credit agencies or advertisers, Mali was built with one guiding principle: your money and financial data are strictly private.</p>
       </div>
       <div>
         <ul class="trust-highlights">
@@ -1017,40 +1246,45 @@
     <div class="section-title">
       <div class="section-subtitle-tag">Got Questions?</div>
       <h2>Frequently Asked Questions</h2>
-      <p>Everything you need to know about the Ahl app, your privacy, and data security.</p>
+      <p>Everything you need to know about the Mali app, your privacy, and data security.</p>
     </div>
 
     <div class="faq-grid">
       <div class="faq-item">
-        <h4>Does Ahl connect to my bank or store my passwords?</h4>
-        <p>Never. Ahl is built on a 100% Local-First architecture. We never ask for, transmit, or store bank credentials, passwords, or account numbers. All your data lives securely inside your device’s local storage.</p>
+        <h4>Does Mali connect to my bank or store my passwords?</h4>
+        <p>Never. Mali is built on a 100% Local-First architecture. We never ask for, transmit, or store bank credentials, passwords, or account numbers. All your data lives securely inside your device’s local storage.</p>
       </div>
 
       <div class="faq-item">
-        <h4>How does multi-contributor income work without mental math?</h4>
-        <p>In your setup wizard or Settings, simply tap "Add Contributor". Enter names (e.g. Self, Spouse, Child) and their individual monthly salaries. Ahl automatically sums them and balances your total household cash flow in real-time.</p>
+        <h4>Can I use Mali as a single individual or is it only for families?</h4>
+        <p>Mali is designed for both! Solo users can effortlessly track their primary income, personal subscriptions, and Zakat. If you share finances with a spouse or partner, you can optionally tap "Add Income Source" to sum inflows with zero mental math.</p>
       </div>
 
       <div class="faq-item">
         <h4>How does the Subscription Radar work?</h4>
-        <p>Ahl includes a pre-indexed directory of 117+ services popular in Saudi Arabia, the UAE, Qatar, Kuwait, Bahrain, and Oman (Jahez, Hungerstation, Shahid, TOD, ChatGPT, etc.). You can search, toggle them on, or add custom services in seconds.</p>
+        <p>Mali includes a pre-indexed directory of 117+ services popular in Saudi Arabia, the UAE, Qatar, Kuwait, Bahrain, and Oman (Jahez, Hungerstation, Shahid, TOD, ChatGPT, etc.). You can search, toggle them on, or add custom services in seconds.</p>
       </div>
 
       <div class="faq-item">
-        <h4>Can I use Ahl completely offline?</h4>
-        <p>Yes. Ahl requires no internet connection for day-to-day budgeting, calculating expenses, or managing subscriptions. Everything runs locally on your smartphone.</p>
+        <h4>Can I use Mali completely offline?</h4>
+        <p>Yes. Mali requires no internet connection for day-to-day budgeting, calculating expenses, or managing subscriptions. Everything runs locally on your smartphone.</p>
       </div>
 
       <div class="faq-item">
         <h4>What happens if I change my phone?</h4>
         <p>You can export a full database backup or an Excel/CSV spreadsheet directly from Settings. On your new phone, restore your backup with a single tap.</p>
       </div>
+
+      <div class="faq-item">
+        <h4>Can I try Mali Pro before paying?</h4>
+        <p>Yes! Our Annual plan includes a full 7-Day Free Trial. You get complete access to every Pro feature risk-free. If you decide it's not for you, cancel anytime in Google Play before Day 7 and you won't be charged a single cent.</p>
+      </div>
     </div>
 
     <!-- Bottom Banner CTA -->
     <div class="cta-banner">
-      <h2>Take Sovereign Control of Your Household Wealth</h2>
-      <p>Download Ahl today on Google Play and experience the peace of mind of private, family-centric budgeting tailored for GCC living.</p>
+      <h2>Take Sovereign Control of Your Wealth</h2>
+      <p>Download Mali today on Google Play and experience the peace of mind of private, sovereign wealth management tailored for the GCC.</p>
       <a href="https://play.google.com/store/apps/details?id=com.zyad.lockin" target="_blank" rel="noopener noreferrer" class="btn-play-store" style="display:inline-flex;">
         <svg class="play-icon-svg" viewBox="0 0 512 512">
           <path fill="#4285F4" d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1z"/>
@@ -1072,11 +1306,11 @@
       <div class="footer-grid">
         <div class="footer-brand-col">
           <a href="index.html" class="brand">
-            <img src="icon.png" alt="Ahl Logo" class="brand-img">
-            <span>Ahl <span class="brand-title-ar">أهل</span></span>
+            <img src="icon.png" alt="Mali Logo" class="brand-img">
+            <span>Mali <span class="brand-title-ar">مالي</span></span>
           </a>
           <p>
-            Sovereign family wealth management and budgeting tailored specifically for GCC households. 100% Local-First, Zero-Cloud privacy.
+            Sovereign personal wealth management and budgeting tailored specifically for GCC residents. 100% Local-First, Zero-Cloud privacy.
           </p>
         </div>
 
@@ -1086,7 +1320,8 @@
             <li><a href="https://play.google.com/store/apps/details?id=com.zyad.lockin" target="_blank" rel="noopener noreferrer">Download on Google Play</a></li>
             <li><a href="#features">Features</a></li>
             <li><a href="#how-it-works">How It Works</a></li>
-            <li><a href="#trust">Why Ahl</a></li>
+            <li><a href="#pricing">Pricing</a></li>
+            <li><a href="#trust">Why Mali</a></li>
             <li><a href="#faq">FAQ</a></li>
           </ul>
         </div>
@@ -1103,7 +1338,7 @@
 
       <div class="footer-legal-bar">
         <div>
-          © 2026 Ahl App (أهل). All rights reserved.
+          © 2026 Mali App (مالي). All rights reserved.
         </div>
         <div>
           Google Play and the Google Play logo are trademarks of Google LLC.

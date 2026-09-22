@@ -83,13 +83,13 @@ class _HouseholdDashboardScreenState extends State<HouseholdDashboardScreen> {
       members: members,
     );
 
-    final filename = 'ahl_transactions_${DateFormat('yyyyMMdd').format(DateTime.now())}.csv';
+    final filename = 'mali_transactions_${DateFormat('yyyyMMdd').format(DateTime.now())}.csv';
     await ExportService().shareCsv(
       csvContent: csv,
       filename: filename,
       subject: isArabic
-          ? 'سجل معاملات أسرة ${_household.name}'
-          : '${_household.name} Household Transactions',
+          ? 'سجل معاملات محفظة ${_household.name}'
+          : '${_household.name} Transactions',
     );
   }
 
@@ -228,15 +228,15 @@ class _HouseholdDashboardScreenState extends State<HouseholdDashboardScreen> {
                               const Icon(Icons.workspace_premium_rounded, color: AppTheme.accentGold),
                               const SizedBox(width: 8),
                               Text(
-                                isArabic ? 'عضوية أهل برو' : 'Ahl Pro Membership',
+                                isArabic ? 'عضوية مالي برو' : 'Mali Pro Membership',
                                 style: AppTheme.editorialHeading(fontSize: 18, lang: lang),
                               ),
                             ],
                           ),
                           content: Text(
                             isArabic
-                                ? 'عضوية أهل برو نشطة عبر Google Play. جميع ميزات المساهمين والميزانيات الموسمية وحسابات الزكاة وتصدير البيانات مفتوحة بلا حدود.'
-                                : 'Ahl Pro is active via Google Play. Unlimited contributors, seasonal budgets, Zakat portfolio tracking, and instant data exports are completely available.',
+                                ? 'عضوية مالي برو نشطة عبر Google Play. جميع ميزات تتبع الدخل والاشتراكات والميزانيات وتصدير البيانات مفتوحة بلا حدود.'
+                                : 'Mali Pro is active via Google Play. Unlimited incomes, subscriptions, budgets, and instant data exports are completely available.',
                             style: AppTheme.body(fontSize: 13, lang: lang),
                           ),
                           actions: [
@@ -282,7 +282,7 @@ class _HouseholdDashboardScreenState extends State<HouseholdDashboardScreen> {
                     visualDensity: VisualDensity.compact,
                     avatar: const Icon(Icons.workspace_premium_rounded, size: 14, color: AppTheme.accentGold),
                     label: Text(
-                      isArabic ? 'أهل برو' : 'Get Pro',
+                      isArabic ? 'مالي برو' : 'Mali Pro',
                       style: AppTheme.body(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
